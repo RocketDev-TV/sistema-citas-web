@@ -5,7 +5,7 @@ import mx.ipn.upiicsa.sistema_citas.dto.CitaDto;
 import mx.ipn.upiicsa.sistema_citas.mv.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import jakarta.transaction.Transactional; // Import correcto
 import java.util.List;
 
 @Service
@@ -21,7 +21,10 @@ public class CitaBs {
     private SucursalRepository sucursalRepository;
     @Autowired
     private EmpleadoRepository empleadoRepository;
+    @Autowired
+    private BloqueCitaRepository bloqueCitaRepository;
 
+    @Transactional // <--- ¡AGREGA ESTO! Para que todo sea una sola operación atómica
     public Cita agendar(CitaDto dto) {
         // 1. Validar Cliente
         Persona cliente = personaRepository.findById(dto.getIdCliente())
@@ -45,11 +48,25 @@ public class CitaBs {
         cita.setServicio(servicio);
         cita.setSucursal(sucursal);
         cita.setEmpleado(empleado);
-        
-        // Asignamos una lista de precio default (o validas si existe)
-        cita.setIdListaPrecio(1); 
+        cita.setIdListaPrecio(1); // Default
 
-        return citaRepository.save(cita);
+        // 6. Guardamos la Cita PRIMERO (para tener su ID)
+        // BORRÉ EL RETURN QUE TENÍAS AQUÍ
+        Cita citaGuardada = citaRepository.save(cita);
+
+        // 7. Guardamos el Tiempo (BloqueCita) AHORA SÍ
+        if (dto.getFechaInicio() != null && dto.getFechaFin() != null) {
+            BloqueCita bloque = new BloqueCita();
+            bloque.setCita(citaGuardada); // Enlazamos con la cita recién creada
+            bloque.setIdSucursal(dto.getIdSucursal());
+            bloque.setFechaInicio(dto.getFechaInicio());
+            bloque.setFechaFin(dto.getFechaFin());
+
+            bloqueCitaRepository.save(bloque); // ¡Guardamos el tiempo!
+        }
+
+        // 8. Retornamos al final de todo
+        return citaGuardada;
     }
 
     public List<Cita> listarTodas() {

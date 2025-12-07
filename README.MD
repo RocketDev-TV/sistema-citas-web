@@ -33,3 +33,13 @@ Para levantar el servidor:
 
 ```bash
 mvn spring-boot:run
+
+
+El servidor corre en: http://localhost:8080
+
+🔌 Endpoints Principales (Ejemplos)
+Método,Endpoint,Descripción
+POST,/api/sucursales,Registrar sucursal con ubicación (Lat/Lon)
+POST,/api/personas,Registrar Cliente
+POST,/api/empleados,Contratar empleado (Persona + Sucursal)
+POST,/api/citas,Agendar nueva cita

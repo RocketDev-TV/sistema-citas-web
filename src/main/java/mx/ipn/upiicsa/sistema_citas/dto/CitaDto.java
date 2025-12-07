@@ -1,6 +1,7 @@
 package mx.ipn.upiicsa.sistema_citas.dto;
 
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 public class CitaDto {
@@ -8,5 +9,7 @@ public class CitaDto {
     private Integer idServicio;
     private Integer idSucursal;
     private Integer idEmpleado;
-    // private LocalDateTime fechaHora; // Descomenta si agregas fecha
+    
+    private LocalDateTime fechaInicio;
+    private LocalDateTime fechaFin;
 }
