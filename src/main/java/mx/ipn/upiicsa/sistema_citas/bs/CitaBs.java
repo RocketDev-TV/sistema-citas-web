@@ -24,8 +24,28 @@ public class CitaBs {
     @Autowired
     private BloqueCitaRepository bloqueCitaRepository;
 
-    @Transactional // <--- ¡AGREGA ESTO! Para que todo sea una sola operación atómica
+    @Transactional
     public Cita agendar(CitaDto dto) {
+        // --- VALIDACIÓN ---
+        // 0. Validar Horario
+        if (dto.getFechaInicio() != null && dto.getFechaFin() != null) {
+            // Regla de oro: El fin no puede ser antes que el inicio
+            if (dto.getFechaFin().isBefore(dto.getFechaInicio())) {
+                throw new RuntimeException("¡No inventes! La cita no puede terminar antes de empezar.");
+            }
+
+            // Llamamos para ver si hay empalmes
+            boolean estaOcupado = bloqueCitaRepository.empleadoOcupado(
+                dto.getIdEmpleado(), 
+                dto.getFechaInicio(), 
+                dto.getFechaFin()
+            );
+
+            if (estaOcupado) {
+                throw new RuntimeException("¡Agenda llena! El empleado ya tiene chamba a esa hora.");
+            }
+        }
+
         // 1. Validar Cliente
         Persona cliente = personaRepository.findById(dto.getIdCliente())
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
