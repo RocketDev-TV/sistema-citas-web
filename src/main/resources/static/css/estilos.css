@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
+
+:root {
+    --barber-gold: #cda45e;
+    --barber-gold-hover: #e0b874;
+    --barber-dark: #121212;
+    --barber-card: #1e1e1e;
+    --barber-text-muted: #888;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+/* --- Botones Redonditos "Coquetos" --- */
+.btn-barber {
+    background-color: var(--barber-gold);
+    color: #000;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: none;
+    transition: all 0.3s ease;
+    border-radius: 50px; /* <--- AQUÍ ESTÁ EL CAMBIO: Redondo tipo pastilla */
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+.btn-barber:hover {
+    background-color: var(--barber-gold-hover);
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(205, 164, 94, 0.4);
+}
+
+/* --- Login Styles --- */
+.login-section {
+    min-height: 100vh;
+    background: var(--barber-dark);
+    display: flex;
+    align-items: center;
+}
+
+.card-login-barber {
+    background-color: var(--barber-card);
+    border: 1px solid #333;
+    border-radius: 20px; /* <--- CAJA REDONDEADA */
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+}
+
+.login-image-side {
+    background-image: url('https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070&auto=format&fit=crop'); /* Cambié la foto a una más pro */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    min-height: 500px;
+}
+
+.login-image-side::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); /* Degradado más elegante */
+}
+
+.login-form-side {
+    padding: 3rem;
+}
+
+.barber-title {
+    color: var(--barber-gold);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+/* Inputs Redondeados */
+[data-bs-theme="dark"] .form-control {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    color: var(--barber-gold);
+    border-radius: 12px; /* <--- AQUÍ: Input curvo */
+    padding: 12px 20px;
+}
+
+[data-bs-theme="dark"] .form-control:focus {
+    border-color: var(--barber-gold);
+    box-shadow: 0 0 0 0.25rem rgba(205, 164, 94, 0.2);
+}
+
+/* Estilo para el botón del ojito */
+.btn-eye {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-left: none;
+    color: var(--barber-text-muted);
+    border-top-right-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
+}
+.btn-eye:hover {
+    background-color: #333;
+    color: var(--barber-gold);
+    border-color: #444;
+}
+
+/* Arreglo para que el input del password se pegue al ojito */
+#password {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+}
