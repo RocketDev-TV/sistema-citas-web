@@ -10,10 +10,10 @@ public class Empleado {
 
     @Id
     @Column(name = "id_empleado")
-    private Integer idEmpleado; // Es el mismo ID de la persona
+    private Integer idEmpleado;
 
     @OneToOne
-    @MapsId // <--- ¡EL TRUCO! Une la PK con la FK
+    @MapsId
     @JoinColumn(name = "id_empleado")
     private Persona persona;
 

@@ -34,7 +34,7 @@ public class Cita {
     @JoinColumn(name = "fk_id_empleado")
     private Empleado empleado;
 
-    // Truco: Mapeamos ListaPrecio como ID simple por ahora
+    // Mapeamos ListaPrecio como ID simple por ahora
     @Column(name = "fk_id_lista_precio")
     private Integer idListaPrecio;
 

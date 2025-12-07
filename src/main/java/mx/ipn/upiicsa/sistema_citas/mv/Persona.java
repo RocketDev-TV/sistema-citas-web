@@ -24,9 +24,9 @@ public class Persona {
     private String segundoApellido;
 
     @Column(name = "fh_nacimiento")
-    private LocalDate fechaNacimiento; // Ojo: Importar java.time.LocalDate
+    private LocalDate fechaNacimiento;
 
-    // Truco: Mapeamos el género directo como ID para no crear otra clase ahorita
+    // Mapeamos el género directo como ID para no crear otra clase ahorita
     @Column(name = "fk_id_genero")
     private Integer idGenero; 
 }
