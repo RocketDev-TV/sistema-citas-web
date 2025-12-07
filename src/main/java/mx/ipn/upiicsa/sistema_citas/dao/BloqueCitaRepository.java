@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Repository
 public interface BloqueCitaRepository extends JpaRepository<BloqueCita, Integer> {
 
-    // ESTA ES LA "MANIJA" 🔥
     // Traducimos la fórmula matemática a SQL de Java (JPQL)
     // "Revisa si hay algún bloque (b) de este empleado donde las horas se crucen"
     @Query("""
