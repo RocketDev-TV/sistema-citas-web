@@ -1,0 +1,115 @@
+/* --- Navbar --- */
+.navbar-barber {
+    background-color: #000 !important;
+    border-bottom: 2px solid var(--barber-gold);
+}
+
+.navbar-brand-barber {
+    color: var(--barber-gold) !important;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* --- Tabla --- */
+.table-barber {
+    border-color: #333;
+}
+
+.table-barber thead th {
+    background-color: #1a1a1a;
+    color: var(--barber-gold);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--barber-gold);
+}
+
+.table-hover.table-barber tbody tr:hover {
+    background-color: #252525;
+}
+
+/* --- TARJETAS DE SERVICIO (GRID MEJORADO) --- */
+.service-card {
+    background-color: #232323;
+    border: 1px solid #333;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    padding: 20px;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 1;
+}
+
+.service-card:hover {
+    border-color: var(--barber-gold);
+    background-color: #2a2a2a;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.service-card.selected {
+    background-color: var(--barber-gold);
+    border-color: var(--barber-gold);
+    box-shadow: 0 0 15px rgba(205, 164, 94, 0.4);
+}
+
+/* ÍCONO DE FONDO (MARCA DE AGUA) */
+.service-icon-bg {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.03);
+    transform: rotate(-15deg);
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Header Limpio */
+.service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 10px;
+}
+
+.service-title {
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.service-price {
+    color: var(--barber-gold);
+    font-weight: 800;
+    font-size: 1.2rem;
+    white-space: nowrap;
+}
+
+/* Descripción */
+.service-desc {
+    color: #aaa;
+    font-size: 0.8rem !important;
+    font-style: italic;
+    font-weight: 300;
+    line-height: 1.4;
+    opacity: 0.9;
+    margin-bottom: 0;
+    padding-right: 10px;
+}
+
+/* Ajustes al seleccionar */
+.service-card.selected .service-title,
+.service-card.selected .service-price { color: #000; }
+.service-card.selected .service-desc { color: #222; opacity: 1; font-weight: 500; }
+.service-card.selected .service-icon-bg { color: rgba(0, 0, 0, 0.05); }

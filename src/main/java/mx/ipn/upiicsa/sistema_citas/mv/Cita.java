@@ -3,6 +3,7 @@ package mx.ipn.upiicsa.sistema_citas.mv;
 import jakarta.persistence.*;
 import lombok.Data;
 //import java.time.LocalDateTime; // Para fecha Y hora
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Data
 @Entity
@@ -37,6 +38,10 @@ public class Cita {
     // Mapeamos ListaPrecio como ID simple por ahora
     @Column(name = "fk_id_lista_precio")
     private Integer idListaPrecio;
+
+    @OneToOne(mappedBy = "cita", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("cita")
+    private BloqueCita bloqueCita;
 
     // Aunque no está en tu CREATE TABLE original, 
     // seguro necesitas saber CUÁNDO es la cita, ¿no? 

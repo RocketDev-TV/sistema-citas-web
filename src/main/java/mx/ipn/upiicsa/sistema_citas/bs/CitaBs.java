@@ -5,7 +5,7 @@ import mx.ipn.upiicsa.sistema_citas.dto.CitaDto;
 import mx.ipn.upiicsa.sistema_citas.mv.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional; // Import correcto
+import jakarta.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -26,70 +26,62 @@ public class CitaBs {
 
     @Transactional
     public Cita agendar(CitaDto dto) {
-        // --- VALIDACIÓN ---
         // 0. Validar Horario
         if (dto.getFechaInicio() != null && dto.getFechaFin() != null) {
-            // Regla de oro: El fin no puede ser antes que el inicio
             if (dto.getFechaFin().isBefore(dto.getFechaInicio())) {
                 throw new RuntimeException("¡No inventes! La cita no puede terminar antes de empezar.");
             }
-
-            // Llamamos para ver si hay empalmes
             boolean estaOcupado = bloqueCitaRepository.empleadoOcupado(
-                dto.getIdEmpleado(), 
-                dto.getFechaInicio(), 
-                dto.getFechaFin()
-            );
-
+                    dto.getIdEmpleado(),
+                    dto.getFechaInicio(),
+                    dto.getFechaFin());
             if (estaOcupado) {
                 throw new RuntimeException("¡Agenda llena! El empleado ya tiene chamba a esa hora.");
             }
         }
 
-        // 1. Validar Cliente
+        // 1. Validar Entidades
         Persona cliente = personaRepository.findById(dto.getIdCliente())
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-
-        // 2. Validar Servicio
         Servicio servicio = servicioRepository.findById(dto.getIdServicio())
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
-
-        // 3. Validar Sucursal
         Sucursal sucursal = sucursalRepository.findById(dto.getIdSucursal())
                 .orElseThrow(() -> new RuntimeException("Sucursal no encontrada"));
-
-        // 4. Validar Empleado
         Empleado empleado = empleadoRepository.findById(dto.getIdEmpleado())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-        // 5. Armar la Cita
+        // 2. Guardar Cita
         Cita cita = new Cita();
         cita.setCliente(cliente);
         cita.setServicio(servicio);
         cita.setSucursal(sucursal);
         cita.setEmpleado(empleado);
-        cita.setIdListaPrecio(1); // Default
+        cita.setIdListaPrecio(1);
 
-        // 6. Guardamos la Cita PRIMERO (para tener su ID)
-        // BORRÉ EL RETURN QUE TENÍAS AQUÍ
         Cita citaGuardada = citaRepository.save(cita);
 
-        // 7. Guardamos el Tiempo (BloqueCita) AHORA SÍ
+        // 3. Guardar Bloque de Tiempo
         if (dto.getFechaInicio() != null && dto.getFechaFin() != null) {
             BloqueCita bloque = new BloqueCita();
-            bloque.setCita(citaGuardada); // Enlazamos con la cita recién creada
+            bloque.setCita(citaGuardada);
             bloque.setIdSucursal(dto.getIdSucursal());
             bloque.setFechaInicio(dto.getFechaInicio());
             bloque.setFechaFin(dto.getFechaFin());
-
-            bloqueCitaRepository.save(bloque); // ¡Guardamos el tiempo!
+            bloqueCitaRepository.save(bloque);
         }
 
-        // 8. Retornamos al final de todo
         return citaGuardada;
     }
 
     public List<Cita> listarTodas() {
         return citaRepository.findAll();
+    }
+
+    // --- NUEVO MÉTODO PARA BORRAR ---
+    public void cancelar(Integer id) {
+        if (!citaRepository.existsById(id)) {
+            throw new RuntimeException("La cita no existe.");
+        }
+        citaRepository.deleteById(id);
     }
 }

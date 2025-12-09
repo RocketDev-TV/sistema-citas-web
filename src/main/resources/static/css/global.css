@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
+
+:root {
+    --barber-gold: #cda45e;
+    --barber-gold-hover: #e0b874;
+    --barber-dark: #121212;
+    --barber-card: #1e1e1e;
+    --barber-text-muted: #888;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.5px;
+    background-color: var(--barber-dark);
+    color: white;
+}
+
+/* --- Botones --- */
+.btn-barber {
+    background-color: var(--barber-gold);
+    color: #000;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: none;
+    transition: all 0.3s ease;
+    border-radius: 50px;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+.btn-barber:hover {
+    background-color: var(--barber-gold-hover);
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(205, 164, 94, 0.4);
+}
+
+/* --- Inputs y Selects en Modo Oscuro --- */
+[data-bs-theme="dark"] .form-control {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    color: var(--barber-gold);
+    border-radius: 12px;
+    padding: 12px 20px;
+}
+
+/* AJUSTE CLAVE: Padding extra a la derecha para que no se corte el texto */
+[data-bs-theme="dark"] .form-select {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    color: var(--barber-gold);
+    border-radius: 12px;
+    /* Arriba | Derecha (Espacio flecha) | Abajo | Izquierda */
+    padding: 12px 45px 12px 20px; 
+    cursor: pointer;
+}
+
+[data-bs-theme="dark"] .form-select option {
+    background-color: #1a1a1a;
+    color: white;
+    padding: 10px;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    border-color: var(--barber-gold);
+    box-shadow: 0 0 0 0.25rem rgba(205, 164, 94, 0.2);
+}
+
+/* Utilería */
+.text-gold { color: var(--barber-gold) !important; }
+
+/* --- ALERTAS SWEETALERT BARBER STYLE --- */
+
+/* Fondo de la alerta */
+div:where(.swal2-container) div:where(.swal2-popup) {
+    background: #1e1e1e !important; /* Gris oscuro Barber */
+    border: 1px solid #333 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8) !important;
+}
+
+/* Título Dorado */
+div:where(.swal2-container) .swal2-title {
+    color: var(--barber-gold) !important;
+    font-family: 'Montserrat', sans-serif !important;
+    text-transform: uppercase;
+    font-weight: 800 !important;
+    letter-spacing: 1px;
+}
+
+/* Texto del cuerpo */
+div:where(.swal2-container) .swal2-html-container {
+    color: #ccc !important; /* Gris claro */
+    font-size: 0.95em !important;
+}
+
+/* Botón de Confirmar (El Dorado) */
+div:where(.swal2-container) .swal2-confirm {
+    background-color: var(--barber-gold) !important;
+    color: #000 !important;
+    font-weight: 800 !important;
+    border-radius: 50px !important; /* Pill style */
+    box-shadow: none !important;
+    text-transform: uppercase;
+    padding: 10px 30px !important;
+}
+
+div:where(.swal2-container) .swal2-confirm:hover {
+    background-color: var(--barber-gold-hover) !important;
+    transform: translateY(-2px);
+}
+
+/* Botón de Cancelar (El Discreto) */
+div:where(.swal2-container) .swal2-cancel {
+    background-color: transparent !important;
+    color: #aaa !important;
+    border: 1px solid #444 !important;
+    border-radius: 50px !important;
+    font-weight: 600 !important;
+}
+
+div:where(.swal2-container) .swal2-cancel:hover {
+    background-color: #333 !important;
+    color: white !important;
+}
+
+/* Íconos (Ajuste para que no se vean azul/rojo chillante) */
+div:where(.swal2-icon).swal2-success {
+    border-color: var(--barber-gold) !important;
+    color: var(--barber-gold) !important;
+}
+div:where(.swal2-icon).swal2-success [class^='swal2-success-line'] {
+    background-color: var(--barber-gold) !important;
+}
+div:where(.swal2-icon).swal2-success .swal2-success-ring {
+    border: .25em solid rgba(205, 164, 94, 0.3) !important;
+}

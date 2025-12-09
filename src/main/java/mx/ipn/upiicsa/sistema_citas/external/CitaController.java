@@ -24,4 +24,9 @@ public class CitaController {
     public Cita agendar(@RequestBody CitaDto dto) {
         return citaBs.agendar(dto);
     }
+
+    @DeleteMapping("/{id}")
+    public void cancelar(@PathVariable Integer id) {
+        citaBs.cancelar(id);
+    }
 }

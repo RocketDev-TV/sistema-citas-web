@@ -46,10 +46,17 @@ if (form) {
             if (respuesta.ok) {
                 const usuario = await respuesta.json();
                 localStorage.setItem('usuario', JSON.stringify(usuario));
-                // Redirigir
-                window.location.href = 'dashboard.html';
+                
+                // --- LÓGICA DE REDIRECCIÓN POR ROL ---
+                // 1 = Admin, 2 = Empleado, 3 = Cliente
+                if (usuario.idRol === 1 || usuario.idRol === 2) {
+                    window.location.href = 'admin.html'; // Panel Administrativo
+                } else {
+                    window.location.href = 'cliente.html'; // Portal del Cliente
+                }
+                
             } else {
-                mostrarError("Credenciales incorrectas.");
+                    mostrarError("Credenciales incorrectas.");
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
             }
@@ -66,4 +73,15 @@ function mostrarError(msg) {
     alertError.textContent = msg;
     alertError.classList.remove('d-none');
     alertError.innerText = msg; // Asegura que se actualice el texto
+}
+
+// --- NOTIFICACIONES ---
+function mostrarNotificacion(mensaje, tipo = 'success') {
+    Swal.fire({
+        title: tipo === 'success' ? '¡Éxito!' : 'Atención',
+        text: mensaje,
+        icon: tipo,
+        confirmButtonText: 'Entendido',
+        backdrop: `rgba(0,0,0,0.8)` // Fondo oscurecido
+    });
 }

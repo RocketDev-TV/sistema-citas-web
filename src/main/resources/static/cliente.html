@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Espacio - Barber King</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <link href="css/global.css" rel="stylesheet">
+    <link href="css/dashboard.css" rel="stylesheet"> </head>
+<body style="background-color: var(--barber-dark);">
+
+    <nav class="navbar navbar-barber mb-5">
+        <div class="container">
+            <a class="navbar-brand navbar-brand-barber mx-auto" href="#">💈 Barber King</a>
+            <button class="btn btn-link text-muted position-absolute end-0 me-3" onclick="cerrarSesion()">
+                <i class="bi bi-box-arrow-right h4"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 800px;">
+        
+        <div class="text-center mb-5">
+            <h5 class="text-muted text-uppercase mb-2">Bienvenido de nuevo</h5>
+            <h1 class="text-white fw-bold display-5" id="nombreCliente">Cargando...</h1>
+        </div>
+
+        <div class="card service-card mb-5 p-4 border-warning" style="border-style: dashed; cursor: default;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="service-title text-warning mb-1">¿Listo para un cambio?</h4>
+                    <p class="service-desc mb-0 opacity-75">Agenda tu próximo corte en segundos.</p>
+                </div>
+                <button class="btn btn-barber btn-lg px-4" data-bs-toggle="modal" data-bs-target="#modalNuevaCita">
+                    Agendar Ahora
+                </button>
+            </div>
+        </div>
+
+        <h5 class="text-white text-uppercase mb-3 border-bottom border-secondary pb-2">Mis Próximas Citas</h5>
+        <div id="contenedorMisCitas" class="row g-3">
+            <div class="text-center text-muted py-4">Cargando tu agenda...</div>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="modalNuevaCita" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="background-color: var(--barber-card); border: 1px solid #333; color: white;">
+                
+                <div class="modal-header" style="border-bottom: 1px solid var(--barber-gold);">
+                    <h5 class="modal-title fw-bold text-uppercase" style="color: var(--barber-gold);">
+                        💈 Agendar Corte
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body p-4">
+                    <form id="formCita">
+                        
+                        <label class="form-label small text-muted mb-3 text-uppercase fw-bold">1. Elige tu estilo</label>
+                        <div id="containerServicios" class="row g-3 mb-4">
+                            <div class="text-center text-muted">Cargando servicios...</div>
+                        </div>
+                        
+                        <input type="hidden" id="inputServicioId">
+                        <input type="hidden" id="inputServicioDuracion">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-muted text-uppercase fw-bold">2. Sucursal</label>
+                                <select id="selectSucursal" class="form-select bg-dark text-white border-secondary" required></select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-muted text-uppercase fw-bold">3. Barbero</label>
+                                <select id="selectEmpleado" class="form-select bg-dark text-white border-secondary" required>
+                                    <option disabled selected>Elige sucursal...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted text-uppercase fw-bold">4. Inicio del Corte</label>
+                            <input type="datetime-local" id="fechaInicio" class="form-control bg-dark text-white border-secondary" required>
+                            
+                            <div id="infoDuracion" class="form-text mt-2 d-flex justify-content-between">
+                                <span class="text-secondary small">Duración estimada</span>
+                                <span class="text-white fw-bold" id="txtHoraFin">--:--</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="modal-footer d-flex justify-content-between align-items-center" style="border-top: 1px solid #333; background-color: #1a1a1a;">
+                    <div>
+                        <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Total a Pagar</small>
+                        <span id="txtTotal" class="fw-bold" style="color: var(--barber-gold); font-size: 1.5rem;">$0.00</span>
+                    </div>
+
+                    <div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm me-2 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-barber btn-sm rounded-pill px-4" onclick="guardarCita()">
+                            Confirmar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/cliente.js"></script>
+</body>
+</html>
