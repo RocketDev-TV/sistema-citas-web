@@ -25,6 +25,7 @@ public class CitaController {
         return citaBs.agendar(dto);
     }
 
+    // --- EL BOTÓN ROJO ---
     @DeleteMapping("/{id}")
     public void cancelar(@PathVariable Integer id) {
         citaBs.cancelar(id);

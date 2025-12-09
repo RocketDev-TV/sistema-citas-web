@@ -1,5 +1,5 @@
 // ==========================================
-//  UTILERÍA: ALERTAS MAMALONAS 🔔
+//  UTILERÍA: ALERTAS
 // ==========================================
 function mostrarNotificacion(mensaje, tipo = 'success') {
     Swal.fire({
@@ -7,31 +7,52 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
         text: mensaje,
         icon: tipo,
         confirmButtonText: 'Entendido',
-        // Estilos definidos en global.css
+        backdrop: `rgba(0,0,0,0.8)`
     });
 }
 
 // ==========================================
-//  LÓGICA INICIAL (CLIENTE)
+//  INICIO Y SEGURIDAD
 // ==========================================
-
 const usuarioJson = localStorage.getItem('usuario');
+
+// 1. Si no hay sesión, al login
 if (!usuarioJson) {
     window.location.href = 'index.html';
+    throw new Error("Sin sesión");
 }
+
 const usuario = JSON.parse(usuarioJson);
 
+// 2. Verificar Rol (Si es Admin/Staff, va pa' su panel)
+if (usuario.idRol == 1 || usuario.idRol == 2) {
+    window.location.href = 'admin.html';
+    throw new Error("Redirigiendo a panel admin");
+}
+
+// 3. Prender la luz (Mostrar body)
+document.body.style.display = "block";
+
+// ==========================================
+//  CARGA DE INTERFAZ (DOM READY)
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('nombreCliente').textContent = usuario.persona.nombre.toUpperCase();
+    
+    // CORRECCIÓN DEL NOMBRE: Validamos que exista 'persona' y 'nombre'
+    const nombreDisplay = document.getElementById('nombreCliente');
+    if (nombreDisplay) {
+        const nombre = usuario.persona ? usuario.persona.nombre : "Cliente";
+        const apellido = usuario.persona ? usuario.persona.primerApellido : "";
+        nombreDisplay.textContent = `${nombre} ${apellido}`.toUpperCase();
+    }
     
     cargarMisCitas();
     cargarCatalogos(); 
 });
 
 // ==========================================
-//  CARGAR MIS CITAS (CARDS)
+//  CARGAR MIS CITAS
 // ==========================================
-
 async function cargarMisCitas() {
     try {
         const respuesta = await fetch('/api/citas');
@@ -39,10 +60,12 @@ async function cargarMisCitas() {
         
         const todasLasCitas = await respuesta.json();
         
-        // FILTRO: SOLO MIS CITAS
+        // Filtro por ID de persona
         const misCitas = todasLasCitas.filter(c => c.cliente.idPersona === usuario.persona.idPersona);
         
         const contenedor = document.getElementById('contenedorMisCitas');
+        if (!contenedor) return;
+        
         contenedor.innerHTML = '';
 
         if (misCitas.length === 0) {
@@ -63,7 +86,7 @@ async function cargarMisCitas() {
             
             if (cita.bloqueCita && cita.bloqueCita.fechaInicio) {
                 const f = new Date(cita.bloqueCita.fechaInicio);
-                fechaTexto = f.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                fechaTexto = f.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
                 fechaTexto = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
                 horaTexto = f.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
             }
@@ -117,7 +140,7 @@ async function cargarMisCitas() {
 }
 
 // ==========================================
-//  LÓGICA DEL MODAL (REUTILIZADA)
+//  MODAL Y GUARDADO (MISMO CÓDIGO)
 // ==========================================
 
 async function cargarCatalogos() {
@@ -148,10 +171,8 @@ async function cargarCatalogos() {
                             <div class="service-price">$${precioSimulado}</div>
                         </div>
                         <p class="service-desc">"${desc}"</p>
-                        <div class="mt-3 text-end">
-                            <span class="badge bg-dark border border-secondary text-white-50 rounded-pill fw-normal" style="font-size: 0.7rem;">
-                                ⏱ ${serv.duracion} min
-                            </span>
+                        <div class="mt-2 text-end">
+                            <small style="font-size: 0.7rem; opacity: 0.6;">⏱ ${serv.duracion} min</small>
                         </div>
                     </div>
                 `;
@@ -166,14 +187,15 @@ async function cargarCatalogos() {
         const respEmpleados = await fetch('/api/empleados');
         const empleados = await respEmpleados.json();
         const selectEmp = document.getElementById('selectEmpleado');
-        selectEmp.innerHTML = '<option value="" selected disabled>✂️ Primero elige sucursal...</option>';
-        
-        empleados.forEach(emp => {
-            const option = document.createElement('option');
-            option.value = emp.idEmpleado;
-            option.textContent = `${emp.persona.nombre} - ${emp.sucursal.nombre}`;
-            selectEmp.appendChild(option);
-        });
+        if(selectEmp) {
+            selectEmp.innerHTML = '<option value="" selected disabled>✂️ Primero elige sucursal...</option>';
+            empleados.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.idEmpleado;
+                option.textContent = `${emp.persona.nombre} - ${emp.sucursal.nombre}`;
+                selectEmp.appendChild(option);
+            });
+        }
 
     } catch (error) {
         console.error("Error catálogos:", error);
@@ -224,10 +246,6 @@ function actualizarInfoTiempo() {
     }
 }
 
-// ==========================================
-//  GUARDAR CITA (CON SWEETALERT)
-// ==========================================
-
 async function guardarCita() {
     const idServicio = document.getElementById('inputServicioId').value;
     const duracion = parseInt(document.getElementById('inputServicioDuracion').value);
@@ -236,12 +254,7 @@ async function guardarCita() {
     const fechaInicioVal = document.getElementById('fechaInicio').value; 
 
     if (!idServicio || !idSucursal || !idEmpleado || !fechaInicioVal) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Faltan datos',
-            text: 'Por favor selecciona servicio, sucursal, barbero y fecha.',
-            confirmButtonText: 'OK'
-        });
+        mostrarNotificacion('Por favor selecciona servicio, sucursal, barbero y fecha.', 'warning');
         return;
     }
 
@@ -291,16 +304,11 @@ async function guardarCita() {
             });
         } else {
             const error = await respuesta.json();
-            Swal.fire({
-                icon: 'error',
-                title: 'Ups...',
-                text: error.message || "Ese horario ya está ocupado.",
-                confirmButtonText: 'Entendido'
-            });
+            mostrarNotificacion(error.message || "Ese horario ya está ocupado.", 'error');
         }
     } catch (e) {
         console.error(e);
-        mostrarNotificacion("No pudimos conectar con el servidor.", "error");
+        mostrarNotificacion('Error de conexión con el servidor.', 'error');
     } finally {
         const btn = document.querySelector('button[onclick="guardarCita()"]');
         if(btn) {
@@ -310,9 +318,6 @@ async function guardarCita() {
     }
 }
 
-// ==========================================
-//  CANCELAR CITA (CLIENTE) 🗑️
-// ==========================================
 function confirmarCancelacion(idCita) {
     Swal.fire({
         title: '¿Cancelar tu corte?',
@@ -322,7 +327,6 @@ function confirmarCancelacion(idCita) {
         confirmButtonColor: '#d33',
         cancelButtonColor: '#333',
         confirmButtonText: 'Sí, cancelar',
-        cancelButtonText: 'Conservar',
         background: '#1e1e1e',
         color: '#fff'
     }).then((result) => {
@@ -334,27 +338,20 @@ function confirmarCancelacion(idCita) {
 
 async function eliminarCita(id) {
     try {
-        const respuesta = await fetch(`/api/citas/${id}`, {
-            method: 'DELETE'
-        });
-
+        const respuesta = await fetch(`/api/citas/${id}`, { method: 'DELETE' });
         if (respuesta.ok) {
             Swal.fire({
                 title: 'Cancelada',
                 text: 'Tu cita ha sido eliminada.',
                 icon: 'success',
-                confirmButtonText: 'OK',
-                background: '#1e1e1e',
-                color: '#fff',
-                confirmButtonColor: '#cda45e'
+                background: '#1e1e1e', color: '#fff', confirmButtonColor: '#cda45e'
             });
-            cargarMisCitas(); // Recargar tarjetas
+            cargarMisCitas();
         } else {
-            Swal.fire({icon:'error', title:'Error', text:'No se pudo cancelar', background:'#1e1e1e', color:'#fff'});
+            mostrarNotificacion('No se pudo cancelar', 'error');
         }
     } catch (error) {
-        console.error(error);
-        mostrarNotificacion("Error de conexión.", "error");
+        mostrarNotificacion('Error de conexión', 'error');
     }
 }
 

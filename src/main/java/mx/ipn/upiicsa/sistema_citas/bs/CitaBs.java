@@ -29,12 +29,13 @@ public class CitaBs {
         // 0. Validar Horario
         if (dto.getFechaInicio() != null && dto.getFechaFin() != null) {
             if (dto.getFechaFin().isBefore(dto.getFechaInicio())) {
-                throw new RuntimeException("¡No inventes! La cita no puede terminar antes de empezar.");
+                 throw new RuntimeException("¡No inventes! La cita no puede terminar antes de empezar.");
             }
             boolean estaOcupado = bloqueCitaRepository.empleadoOcupado(
-                    dto.getIdEmpleado(),
-                    dto.getFechaInicio(),
-                    dto.getFechaFin());
+                dto.getIdEmpleado(), 
+                dto.getFechaInicio(), 
+                dto.getFechaFin()
+            );
             if (estaOcupado) {
                 throw new RuntimeException("¡Agenda llena! El empleado ya tiene chamba a esa hora.");
             }
@@ -56,7 +57,7 @@ public class CitaBs {
         cita.setServicio(servicio);
         cita.setSucursal(sucursal);
         cita.setEmpleado(empleado);
-        cita.setIdListaPrecio(1);
+        cita.setIdListaPrecio(1); 
 
         Cita citaGuardada = citaRepository.save(cita);
 
@@ -77,7 +78,7 @@ public class CitaBs {
         return citaRepository.findAll();
     }
 
-    // --- NUEVO MÉTODO PARA BORRAR ---
+    // --- NUEVO MÉTODO CANCELAR ---
     public void cancelar(Integer id) {
         if (!citaRepository.existsById(id)) {
             throw new RuntimeException("La cita no existe.");

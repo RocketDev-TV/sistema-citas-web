@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Barber King</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="css/global.css" rel="stylesheet">
+    <link href="css/login.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+
+    <section class="login-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-10 col-lg-12">
+                    <div class="card card-login-barber">
+                        <div class="row g-0">
+
+                            <div class="col-lg-7">
+                                <div class="login-form-side h-100 d-flex flex-column justify-content-center pt-5 pb-5">
+
+                                    <div class="text-center mb-4">
+                                        <h3 class="barber-title">Únete al Club</h3>
+                                        <small class="text-muted">Crea tu cuenta en segundos</small>
+                                    </div>
+
+                                    <form id="registroForm" autocomplete="off">
+
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label ps-2">NOMBRE</label>
+                                                <input type="text" id="nombre" class="form-control" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label ps-2">APELLIDO</label>
+                                                <input type="text" id="primerApellido" class="form-control" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label ps-2">FECHA NACIMIENTO</label>
+                                                <input type="date" id="fechaNacimiento" class="form-control" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label ps-2">GÉNERO</label>
+                                                <select id="idGenero" class="form-select" required>
+                                                    <option value="1">Masculino</option>
+                                                    <option value="2">Femenino</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <hr class="border-secondary my-4">
+
+                                        <div class="mb-3">
+                                            <label class="form-label ps-2">USUARIO (LOGIN)</label>
+                                            <input type="text" id="login" class="form-control" placeholder="Ej. juan.perez" required>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <label class="form-label ps-2">CONTRASEÑA</label>
+                                            <div class="input-group">
+                                                <input type="password" id="password" class="form-control" placeholder="••••••" required>
+                                                <button class="btn btn-eye px-3" type="button" id="togglePassword">
+                                                    <i class="bi bi-eye-slash" id="iconEye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-barber w-100 py-3 rounded-pill shadow">
+                                            Crear Cuenta
+                                        </button>
+                                    </form>
+
+                                    <div class="text-center mt-4">
+                                        <small class="text-muted">¿Ya tienes cuenta?</small>
+                                        <a href="index.html"
+                                            class="text-warning fw-bold text-decoration-none ms-1">Inicia Sesión</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5 d-none d-lg-block login-image-side"
+                                style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b7f30a?q=80&w=2070&auto=format&fit=crop');">
+                                <div class="d-flex h-100 align-items-end p-5 position-relative" style="z-index: 2;">
+                                    <div class="text-end w-100">
+                                        <h2 class="text-white fw-bold mb-0">Sé parte de la leyenda.</h2>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="js/registro.js"></script>
+</body>
+
+</html>

@@ -1,4 +1,20 @@
-// Lógica del Login y el Ojito
+// ==========================================
+//  CADENERO INVERSO (SI YA ESTÁS DENTRO, NO VES LOGIN)
+// ==========================================
+const usuarioGuardado = localStorage.getItem('usuario');
+if (usuarioGuardado) {
+    const u = JSON.parse(usuarioGuardado);
+    // Si ya tienes sesión, te mando directo a tu panel
+    if (u.idRol === 1 || u.idRol === 2) {
+        window.location.href = 'admin.html';
+    } else {
+        window.location.href = 'cliente.html';
+    }
+}
+
+// ==========================================
+//  LÓGICA DEL LOGIN
+// ==========================================
 
 const form = document.getElementById('loginForm');
 const alertError = document.getElementById('alertError');
@@ -10,17 +26,15 @@ const iconEye = document.getElementById('iconEye');
 
 if (togglePassword) {
     togglePassword.addEventListener('click', function () {
-        // Cambiar el tipo de input
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
         
-        // Cambiar el ícono (Ojo abierto / Ojo tachado)
         iconEye.classList.toggle('bi-eye');
         iconEye.classList.toggle('bi-eye-slash');
     });
 }
 
-// LÓGICA DE LOGIN
+// LÓGICA DE SUBMIT
 if (form) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault(); 
@@ -45,18 +59,18 @@ if (form) {
 
             if (respuesta.ok) {
                 const usuario = await respuesta.json();
+                
+                // GUARDAR SESIÓN
                 localStorage.setItem('usuario', JSON.stringify(usuario));
                 
-                // --- LÓGICA DE REDIRECCIÓN POR ROL ---
-                // 1 = Admin, 2 = Empleado, 3 = Cliente
+                // REDIRECCIÓN SEGÚN ROL
                 if (usuario.idRol === 1 || usuario.idRol === 2) {
-                    window.location.href = 'admin.html'; // Panel Administrativo
+                    window.location.href = 'admin.html';
                 } else {
-                    window.location.href = 'cliente.html'; // Portal del Cliente
+                    window.location.href = 'cliente.html';
                 }
-                
             } else {
-                    mostrarError("Credenciales incorrectas.");
+                mostrarError("Credenciales incorrectas.");
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
             }
@@ -72,16 +86,4 @@ if (form) {
 function mostrarError(msg) {
     alertError.textContent = msg;
     alertError.classList.remove('d-none');
-    alertError.innerText = msg; // Asegura que se actualice el texto
-}
-
-// --- NOTIFICACIONES ---
-function mostrarNotificacion(mensaje, tipo = 'success') {
-    Swal.fire({
-        title: tipo === 'success' ? '¡Éxito!' : 'Atención',
-        text: mensaje,
-        icon: tipo,
-        confirmButtonText: 'Entendido',
-        backdrop: `rgba(0,0,0,0.8)` // Fondo oscurecido
-    });
 }
