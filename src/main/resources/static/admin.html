@@ -9,15 +9,15 @@
     <link href="css/global.css" rel="stylesheet">
     <link href="css/dashboard.css" rel="stylesheet">
 </head>
-<body style="background-color: var(--barber-dark);">
+<body style="background-color: var(--barber-dark); display: none;">
 
     <nav class="navbar navbar-expand-lg navbar-barber shadow-sm mb-5">
         <div class="container-fluid px-4">
             <a class="navbar-brand navbar-brand-barber" href="#">💈 Barber King</a>
             <div class="d-flex align-items-center">
                 <div class="me-4 text-end d-none d-md-block">
-                    <div class="text-white fw-bold" id="nombreUsuario">Cargando...</div>
-                    <small class="text-muted" id="rolUsuario">Administrador</small>
+                    <div class="text-white fw-bold" id="nombreUsuario">...</div>
+                    <small class="text-muted" id="rolUsuario">Admin</small>
                 </div>
                 <button class="btn btn-outline-secondary btn-sm rounded-0 text-uppercase" onclick="cerrarSesion()">Salir 🚪</button>
             </div>
@@ -25,38 +25,55 @@
     </nav>
 
     <div class="container-fluid px-4">
-        <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 1px solid #333;">
-            <div>
-                <h2 class="text-white fw-bold mb-0 text-uppercase" style="letter-spacing: 1px;">Agenda del Día</h2>
-                <p class="text-muted mb-0">Gestiona tus cortes y clientes.</p>
-            </div>
-            <button class="btn btn-barber" data-bs-toggle="modal" data-bs-target="#modalNuevaCita">
-                + Agendar Cita
-            </button>
-        </div>
+        
+        <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active rounded-pill px-4 me-2 fw-bold" id="pills-agenda-tab" data-bs-toggle="pill" data-bs-target="#pills-agenda" type="button" onclick="cargarCitas()">
+                    📅 Agenda
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link rounded-pill px-4 fw-bold" id="pills-equipo-tab" data-bs-toggle="pill" data-bs-target="#pills-equipo" type="button" onclick="cargarEmpleados()">
+                    👥 Equipo
+                </button>
+            </li>
+        </ul>
 
-        <div class="card card-login-barber p-0">
-            <div class="table-responsive">
-                <table class="table table-barber table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th scope="col" class="ps-4">Folio #</th>
-                            <th scope="col">Cliente VIP</th>
-                            <th scope="col">Servicio</th>
-                            <th scope="col">Sucursal</th>
-                            <th scope="col">Atendido Por</th>
-                            <th scope="col" class="text-end pe-4">Horario</th>
-                            <th scope="col"></th> 
-                        </tr>
-                    </thead>
-                    <tbody id="tablaCitas">
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-5">
-                                <h5 class="mb-0">Cargando agenda... 💈⏳</h5>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="tab-content" id="pills-tabContent">
+            
+            <div class="tab-pane fade show active" id="pills-agenda">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 1px solid #333;">
+                    <div><h2 class="text-white fw-bold mb-0 text-uppercase">Agenda del Día</h2></div>
+                    <button class="btn btn-barber" data-bs-toggle="modal" data-bs-target="#modalNuevaCita">+ Agendar Cita</button>
+                </div>
+                <div class="card card-login-barber p-0">
+                    <div class="table-responsive">
+                        <table class="table table-barber table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="ps-4">Folio #</th>
+                                    <th scope="col">Cliente VIP</th>
+                                    <th scope="col">Servicio</th>
+                                    <th scope="col">Sucursal</th>
+                                    <th scope="col">Atendido Por</th>
+                                    <th scope="col" class="text-end pe-4">Horario</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaCitas">
+                                <tr><td colspan="7" class="text-center py-5">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="pills-equipo">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 1px solid #333;">
+                    <div><h2 class="text-white fw-bold mb-0 text-uppercase">Staff & Barberos</h2></div>
+                    <button class="btn btn-outline-warning rounded-pill text-uppercase fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevoEmpleado">+ Contratar</button>
+                </div>
+                <div class="row g-4" id="contenedorEmpleados"></div>
             </div>
         </div>
     </div>
@@ -65,50 +82,74 @@
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content" style="background-color: var(--barber-card); border: 1px solid #333; color: white;">
                 <div class="modal-header" style="border-bottom: 1px solid var(--barber-gold);">
-                    <h5 class="modal-title fw-bold text-uppercase" style="color: var(--barber-gold);">💈 Agendar Corte (Admin)</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title fw-bold text-uppercase" style="color: var(--barber-gold);">💈 Agendar Corte</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="formCita">
-                        <label class="form-label small text-muted mb-3 text-uppercase fw-bold">1. Elige el estilo</label>
-                        <div id="containerServicios" class="row g-3 mb-4">
-                            <div class="text-center text-muted">Cargando servicios...</div>
-                        </div>
+                        <label class="form-label small text-muted mb-3 text-uppercase fw-bold">1. Estilo</label>
+                        <div id="containerServicios" class="row g-3 mb-4"></div>
                         <input type="hidden" id="inputServicioId">
                         <input type="hidden" id="inputServicioDuracion">
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label small text-muted text-uppercase fw-bold">2. Cliente</label>
+                                <label class="form-label small text-muted">2. Cliente</label>
                                 <select id="selectCliente" class="form-select bg-dark text-white border-secondary" required></select>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label small text-muted text-uppercase fw-bold">3. Sucursal</label>
+                                <label class="form-label small text-muted">3. Sucursal</label>
                                 <select id="selectSucursal" class="form-select bg-dark text-white border-secondary" required></select>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label small text-muted text-uppercase fw-bold">4. Barbero</label>
+                                <label class="form-label small text-muted">4. Barbero</label>
                                 <select id="selectEmpleado" class="form-select bg-dark text-white border-secondary" required></select>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small text-muted text-uppercase fw-bold">5. Inicio del Corte</label>
+                            <label class="form-label small text-muted">5. Inicio</label>
                             <input type="datetime-local" id="fechaInicio" class="form-control bg-dark text-white border-secondary" required>
                             <div id="infoDuracion" class="form-text mt-2 d-flex justify-content-between">
-                                <span class="text-secondary small">Duración estimada</span>
-                                <span class="text-white fw-bold" id="txtHoraFin">--:--</span>
+                                <span class="text-secondary">Duración</span><span class="text-white fw-bold" id="txtHoraFin">--:--</span>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer d-flex justify-content-between align-items-center" style="border-top: 1px solid #333; background-color: #1a1a1a;">
-                    <div>
-                        <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Total a Pagar</small>
-                        <span id="txtTotal" class="fw-bold" style="color: var(--barber-gold); font-size: 1.5rem;">$0.00</span>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-outline-secondary btn-sm me-2 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-barber btn-sm rounded-pill px-4" onclick="guardarCita()">Confirmar</button>
-                    </div>
+                    <div><small class="text-muted d-block text-uppercase">Total</small><span id="txtTotal" class="fw-bold text-gold h4">$0.00</span></div>
+                    <div><button type="button" class="btn btn-outline-secondary btn-sm me-2 rounded-pill" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-barber btn-sm rounded-pill px-4" onclick="guardarCita()">Confirmar</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalNuevoEmpleado" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--barber-card); border: 1px solid #333; color: white;">
+                <div class="modal-header" style="border-bottom: 1px solid var(--barber-gold);">
+                    <h5 class="modal-title fw-bold text-uppercase" style="color: var(--barber-gold);">👤 Contratar Talento</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formEmpleado">
+                        <h6 class="text-muted text-uppercase small mb-3">Datos Personales</h6>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6"><input type="text" id="empNombre" class="form-control" placeholder="Nombre" required></div>
+                            <div class="col-6"><input type="text" id="empApellido" class="form-control" placeholder="Apellido" required></div>
+                        </div>
+                        <h6 class="text-muted text-uppercase small mb-3">Asignación</h6>
+                        <div class="mb-3">
+                            <select id="empSucursal" class="form-select bg-dark text-white border-secondary" required>
+                                <option selected disabled>Cargando...</option>
+                            </select>
+                        </div>
+                        <h6 class="text-muted text-uppercase small mb-3">Acceso al Sistema</h6>
+                        <div class="mb-3"><input type="text" id="empLogin" class="form-control" placeholder="Usuario (Login)" required></div>
+                        <div class="mb-3"><input type="password" id="empPassword" class="form-control" placeholder="Contraseña Inicial" required></div>
+                    </form>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #333;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-barber btn-sm rounded-pill px-4" onclick="guardarEmpleado()">CONTRATAR</button>
                 </div>
             </div>
         </div>

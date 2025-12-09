@@ -1,12 +1,10 @@
 package mx.ipn.upiicsa.sistema_citas.bs;
 
-import mx.ipn.upiicsa.sistema_citas.dao.EmpleadoRepository;
-import mx.ipn.upiicsa.sistema_citas.dao.PersonaRepository;
-import mx.ipn.upiicsa.sistema_citas.dao.SucursalRepository;
+import jakarta.transaction.Transactional;
+import mx.ipn.upiicsa.sistema_citas.dao.*;
+import mx.ipn.upiicsa.sistema_citas.dto.AltaEmpleadoDto;
 import mx.ipn.upiicsa.sistema_citas.dto.EmpleadoDto;
-import mx.ipn.upiicsa.sistema_citas.mv.Empleado;
-import mx.ipn.upiicsa.sistema_citas.mv.Persona;
-import mx.ipn.upiicsa.sistema_citas.mv.Sucursal;
+import mx.ipn.upiicsa.sistema_citas.mv.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,22 +19,62 @@ public class EmpleadoBs {
     private PersonaRepository personaRepository;
     @Autowired
     private SucursalRepository sucursalRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository; 
 
+    // --- MÉTODO 1: CONTRATAR (Viejito - Solo vincula) ---
+    // Este faltaba y por eso te daba error en la línea 27 del Controller
     public Empleado contratar(EmpleadoDto dto) {
-        // 1. Buscamos a la persona
         Persona persona = personaRepository.findById(dto.getIdPersona())
-                .orElseThrow(() -> new RuntimeException("¡Esa persona no existe, mai!"));
+                .orElseThrow(() -> new RuntimeException("¡Esa persona no existe!"));
 
-        // 2. Buscamos la sucursal
         Sucursal sucursal = sucursalRepository.findById(dto.getIdSucursal())
                 .orElseThrow(() -> new RuntimeException("¡Esa sucursal no existe!"));
 
-        // 3. Armamos el contrato (Objeto Empleado)
         Empleado empleado = new Empleado();
         empleado.setPersona(persona);
         empleado.setSucursal(sucursal);
 
-        // 4. Guardamos
+        return empleadoRepository.save(empleado);
+    }
+
+    // --- MÉTODO 2: CONTRATAR NUEVO (Full - Crea todo) ---
+    @Transactional
+    public Empleado contratarNuevo(AltaEmpleadoDto dto) {
+        // 1. Validar que la sucursal exista
+        Sucursal sucursal = sucursalRepository.findById(dto.getIdSucursal())
+                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada"));
+
+        // 2. Validar usuario duplicado
+        if (usuarioRepository.findByLogin(dto.getLogin()).isPresent()) {
+            throw new RuntimeException("Ese login ya está ocupado.");
+        }
+
+        // 3. Crear Persona
+        Persona persona = new Persona();
+        persona.setNombre(dto.getNombre());
+        persona.setPrimerApellido(dto.getPrimerApellido());
+        persona.setSegundoApellido(dto.getSegundoApellido());
+        persona.setFechaNacimiento(java.time.LocalDate.now()); 
+        persona.setIdGenero(1); 
+        
+        persona = personaRepository.save(persona);
+
+        // 4. Crear Usuario (Rol 2 = Empleado/Staff)
+        Usuario usuario = new Usuario();
+        usuario.setPersona(persona);
+        usuario.setLogin(dto.getLogin());
+        usuario.setPassword(dto.getPassword());
+        usuario.setIdRol(2); 
+        usuario.setActivo(true);
+        
+        usuarioRepository.save(usuario);
+
+        // 5. Crear Empleado (Vincular a Sucursal)
+        Empleado empleado = new Empleado();
+        empleado.setPersona(persona);
+        empleado.setSucursal(sucursal);
+
         return empleadoRepository.save(empleado);
     }
 

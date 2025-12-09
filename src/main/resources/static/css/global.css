@@ -136,3 +136,21 @@ div:where(.swal2-icon).swal2-success [class^='swal2-success-line'] {
 div:where(.swal2-icon).swal2-success .swal2-success-ring {
     border: .25em solid rgba(205, 164, 94, 0.3) !important;
 }
+
+/* --- Pestañas Barber Style --- */
+.nav-pills .nav-link {
+    color: #aaa; /* Gris apagado cuando no está activo */
+    background-color: transparent;
+    border: 1px solid #333;
+}
+
+.nav-pills .nav-link.active {
+    background-color: var(--barber-gold) !important;
+    color: #000 !important;
+    border-color: var(--barber-gold);
+}
+
+.nav-pills .nav-link:hover:not(.active) {
+    background-color: #333;
+    color: white;
+}
