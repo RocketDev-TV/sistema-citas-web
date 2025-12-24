@@ -1,69 +1,132 @@
 // ==========================================
-//  UTILERÍA: ALERTAS Y HELPERS 🔔
+//  GLOBALES Y SETUP
 // ==========================================
-function mostrarNotificacion(mensaje, tipo = 'success') {
-    Swal.fire({
-        title: tipo === 'success' ? '¡Éxito!' : (tipo === 'error' ? 'Error' : 'Atención'),
-        text: mensaje,
-        icon: tipo,
-        confirmButtonText: 'Entendido',
-        backdrop: `rgba(0,0,0,0.8)`
-    });
-}
+const API_URL = '/api'; 
+let currentUser = null;
 
-// FUNCIÓN GLOBAL (AHORA SÍ ACCESIBLE PARA TODOS)
-function llenarSelect(id, datos, campoValor, campoTexto, textoDefault) {
-    const sel = document.getElementById(id);
-    if (!sel) return; // Protección por si no existe el elemento
-    
-    sel.innerHTML = `<option value="" selected disabled>${textoDefault}</option>`;
-    datos.forEach(d => {
-        const opt = document.createElement('option');
-        opt.value = d[campoValor];
-        opt.textContent = d[campoTexto];
-        sel.appendChild(opt);
-    });
-}
-
-// ==========================================
-//  INICIO Y SEGURIDAD
-// ==========================================
-const usuarioJson = localStorage.getItem('usuario');
-if (!usuarioJson) {
-    window.location.href = 'index.html';
-    throw new Error("Sin sesión");
-} 
-
-const usuario = JSON.parse(usuarioJson);
-
-if (usuario.idRol != 1 && usuario.idRol != 2) {
-    window.location.href = 'cliente.html'; 
-    throw new Error("Acceso denegado"); 
-}
-
-document.body.style.display = "block";
+(function init() {
+    const u = localStorage.getItem('usuario');
+    if (!u) window.location.href = 'index.html';
+    currentUser = JSON.parse(u);
+    if (currentUser.idRol !== 1 && currentUser.idRol !== 2) window.location.href = 'cliente.html';
+})();
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('nombreUsuario').textContent = `${usuario.persona.nombre} ${usuario.persona.primerApellido}`.toUpperCase();
-    document.getElementById('rolUsuario').textContent = usuario.idRol === 1 ? "Administrador" : "Staff";
+    document.body.style.display = 'block';
+    
+    // UI NavBar
+    document.getElementById('nombreUsuario').textContent = `${currentUser.persona.nombre} ${currentUser.persona.primerApellido}`.toUpperCase();
+    document.getElementById('rolUsuario').textContent = currentUser.idRol === 1 ? 'ADMIN' : 'STAFF';
 
-    // Cargas iniciales
-    cargarCitas();
-    cargarCatalogos();
+    // Staff Security
+    if (currentUser.idRol === 2) {
+        const tab = document.getElementById('pills-equipo-tab');
+        if(tab) tab.remove();
+    }
     cargarClientes();
-    cargarEmpleados(); // <--- Aquí cargamos la pestaña de equipo
+    cargarCitas();
+    cargarCatalogos(); // IMPORTANTE: Genera las cards de servicios
+    if(currentUser.idRol === 1) cargarEmpleados();
+
+    // ACTIVAR OJITOS (EMPLEADO Y PERFIL)
+    setupToggle('toggleEmpPass', 'empPass', 'iconEmpPass');
+    setupToggle('toggleEmpPassConfirm', 'empPassConfirm', 'iconEmpPassConfirm');
+    
+    setupToggle('togglePerfilPass', 'perfilPass', 'iconPerfilPass');
+    setupToggle('togglePerfilPassConfirm', 'perfilPassConfirm', 'iconPerfilPassConfirm');
 });
 
 // ==========================================
-//  TAB 1: AGENDA (CITAS)
+//  CATÁLOGOS 
+// ==========================================
+
+async function cargarCatalogos() {
+    try {
+        // 1. Cargar Servicios
+        const respServicios = await fetch(`${API_URL}/servicios`);
+        const servicios = await respServicios.json();
+        
+        const container = document.getElementById('containerServicios');
+        if(container) {
+            container.innerHTML = '';
+            servicios.forEach(serv => {
+                // OBTENER PRECIO REAL (Si es null, pone 0)
+                let precioReal = serv.precio ? serv.precio : 0;
+                let desc = serv.descripcion || "Servicio profesional.";
+
+                const col = document.createElement('div');
+                col.className = 'col-md-6'; 
+                col.innerHTML = `
+                    <div class="service-card" onclick="seleccionarServicio(this, ${serv.idServicio}, ${serv.duracion}, ${precioReal})">
+                        <i class="bi bi-scissors service-icon-bg"></i>
+                        <div class="service-header">
+                            <div class="service-title">${serv.nombre}</div>
+                            <div class="service-price">$${precioReal.toFixed(2)}</div>
+                        </div>
+                        <p class="service-desc">"${desc}"</p>
+                        <div class="mt-2 text-end">
+                            <small style="font-size: 0.7rem; opacity: 0.6;">⏱ ${serv.duracion} min</small>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        // 2. Cargar Sucursales
+        const respSuc = await fetch(`${API_URL}/sucursales`);
+        const sucursales = await respSuc.json();
+        llenarSelect('selectSucursal', sucursales, 'idSucursal', 'nombre');
+        
+        // 3. Cargar Empleados
+        const respEmp = await fetch(`${API_URL}/empleados`);
+        const empleados = await respEmp.json();
+        llenarSelect('selectEmpleado', empleados, 'idEmpleado', 'persona.nombre');
+
+    } catch (error) {
+        console.error("Error catálogos:", error);
+    }
+}
+
+// Helpers Select
+function llenarSelect(id, datos, campoValor, campoTexto) {
+    const sel = document.getElementById(id);
+    if(sel) {
+        sel.innerHTML = '<option value="" selected disabled>Selecciona...</option>';
+        datos.forEach(d => {
+            const texto = campoTexto.split('.').reduce((o,i)=>o[i], d); 
+            const opt = document.createElement('option');
+            opt.value = d[campoValor]; opt.textContent = texto;
+            sel.appendChild(opt);
+        });
+    }
+}
+
+// Selección visual de servicio
+function seleccionarServicio(card, id, dur, precio) {
+    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    
+    document.getElementById('inputServicioId').value = id;
+    document.getElementById('inputServicioDuracion').value = dur;
+    document.getElementById('txtTotal').textContent = `$${precio}.00`;
+    
+    actualizarInfoTiempo(); // Recalcular hora fin
+}
+
+// ==========================================
+//  AGENDA (TABLA CLÁSICA)
 // ==========================================
 async function cargarCitas() {
+    const tbody = document.getElementById('tablaCitas');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">Cargando...</td></tr>';
+    
     try {
-        const respuesta = await fetch('/api/citas');
-        const citas = await respuesta.json();
-        const tbody = document.getElementById('tablaCitas');
+        const res = await fetch(`${API_URL}/citas`);
+        const citas = await res.json();
         tbody.innerHTML = '';
-
+        
         if (citas.length === 0) {
             tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted"><h4>📭 Agenda vacía</h4></td></tr>`;
             return;
@@ -77,306 +140,376 @@ async function cargarCitas() {
                 const dia = f.toLocaleDateString([], {day: '2-digit', month: 'short'});
                 horarioTexto = `<div class="text-end"><div class="text-white fw-bold">${dia}</div><div class="small text-warning">${hora}</div></div>`;
             }
-
             const folio = cita.idCita.toString().padStart(4, '0');
-            const fila = `
+            
+            tbody.innerHTML += `
                 <tr>
                     <td class="ps-4 fw-bold text-muted">#${folio}</td>
                     <td>
                         <div class="fw-bold text-white">${cita.cliente.nombre} ${cita.cliente.primerApellido}</div>
                         <small class="text-muted">ID: ${cita.cliente.idPersona}</small>
                     </td>
-                    <td>
-                        <span class="badge rounded-0 p-2" style="background: #333; color: var(--barber-gold); border: 1px solid var(--barber-gold);">
-                            ✂️ ${cita.servicio.nombre}
-                        </span>
-                    </td>
+                    <td><span class="badge rounded-0 p-2" style="background: #333; color: var(--barber-gold); border: 1px solid var(--barber-gold);">✂️ ${cita.servicio.nombre}</span></td>
                     <td class="text-white-50 small">${cita.sucursal.nombre}</td>
                     <td class="text-white small">👤 ${cita.empleado.persona.nombre}</td>
                     <td class="text-end pe-4">${horarioTexto}</td>
                     <td class="text-end pe-4">
-                        <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="confirmarCancelacion(${cita.idCita})">
-                            <i class="bi bi-trash3-fill"></i>
-                        </button>
+                        <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="confirmarCancelacion(${cita.idCita})"><i class="bi bi-trash3-fill"></i></button>
                     </td>
-                </tr>
-            `;
-            tbody.innerHTML += fila;
+                </tr>`;
         });
-    } catch (error) {
-        console.error(error);
-    }
+    } catch(e) { console.error(e); }
 }
 
 // ==========================================
-//  TAB 2: EQUIPO (EMPLEADOS) 👥
+//  PERFIL & EMPLEADOS (LÓGICA PREMIUM)
 // ==========================================
-async function cargarEmpleados() {
+
+// ==========================================
+//  3. MI PERFIL 
+// ==========================================
+function abrirMiPerfil() {
+    // 1. Llenar Nombre (Este sí existe)
+    document.getElementById('perfilNombreDisplay').textContent = currentUser.persona.nombre;
+
+    // 3. Llenar el formulario
+    document.getElementById('perfilNombre').value = currentUser.persona.nombre;
+    document.getElementById('perfilApellido').value = currentUser.persona.primerApellido;
+    document.getElementById('perfilPass').value = '';
+    document.getElementById('perfilPassConfirm').value = '';
+    
+    // 4. Mostrar
+    new bootstrap.Modal(document.getElementById('modalMiPerfil')).show();
+}
+
+async function actualizarMiPerfil() {
+    const nombre = document.getElementById('perfilNombre').value;
+    const apellido = document.getElementById('perfilApellido').value;
+    const pass = document.getElementById('perfilPass').value;
+    const passConfirm = document.getElementById('perfilPassConfirm').value;
+
+    if(pass && pass !== passConfirm) return Swal.fire('Error', 'Contraseñas no coinciden', 'error');
+
+    const payload = { idUsuario: currentUser.idUsuario, persona: { ...currentUser.persona, nombre: nombre, primerApellido: apellido } };
+    if(pass) payload.password = pass;
+
     try {
-        // 1. Cargar lista de empleados
-        const respuesta = await fetch('/api/empleados');
-        const empleados = await respuesta.json();
-        
-        const contenedor = document.getElementById('contenedorEmpleados');
+        const resp = await fetch(`${API_URL}/usuarios/perfil`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+        if(resp.ok) {
+            const userActualizado = await resp.json();
+            localStorage.setItem('usuario', JSON.stringify(userActualizado));
+            currentUser = userActualizado;
+            Swal.fire('¡Listo!', 'Perfil actualizado', 'success').then(() => location.reload());
+        } else { Swal.fire('Error', 'Falló la actualización', 'error'); }
+    } catch(e) { console.error(e); }
+}
+
+// EMPLEADOS
+async function cargarEmpleados() {
+    const contenedor = document.getElementById('listaEmpleados');
+    if(!contenedor) return;
+    try {
+        const resp = await fetch(`${API_URL}/empleados`);
+        const empleados = await resp.json();
         contenedor.innerHTML = '';
-
-        if (empleados.length === 0) {
-            contenedor.innerHTML = '<div class="text-center text-muted w-100 py-5">No hay empleados registrados.</div>';
-        } else {
-            empleados.forEach(emp => {
-                const card = `
-                    <div class="col-md-4 col-lg-3">
-                        <div class="card bg-dark border-secondary h-100 text-center p-3 service-card" style="cursor: default;">
-                            <div class="mb-3">
-                                <div class="d-inline-block p-3 rounded-circle bg-secondary text-white mb-2">
-                                    <i class="bi bi-person-badge display-6"></i>
-                                </div>
-                                <h5 class="text-white mb-0">${emp.persona.nombre} ${emp.persona.primerApellido}</h5>
-                                <small class="text-warning">ID: ${emp.idEmpleado}</small>
-                            </div>
-                            <div class="text-muted small mb-3">
-                                <i class="bi bi-geo-alt me-1"></i> ${emp.sucursal.nombre}
-                            </div>
-                        </div>
+        empleados.forEach(emp => {
+            const html = `
+                <div class="col">
+                    <div class="employee-card h-100 text-center p-4">
+                        <div class="avatar-ring mb-3"><div class="avatar-img"><i class="bi bi-person-fill"></i></div></div>
+                        <h5 class="text-white fw-bold mb-1">${emp.persona.nombre} ${emp.persona.primerApellido}</h5>
+                        <div class="mb-3"><span class="card-role-badge">${emp.rol ? emp.rol.nombre : 'Staff'}</span></div>
+                        <button class="btn btn-sm btn-outline-light rounded-pill px-3 opacity-75" onclick='prepararModalEmpleado(${JSON.stringify(emp)})'>
+                            <i class="bi bi-pencil-square me-1"></i> Editar
+                        </button>
                     </div>
-                `;
-                contenedor.innerHTML += card;
-            });
-        }
+                </div>`;
+            contenedor.innerHTML += html;
+        });
+    } catch(e) { console.error(e); }
+}
 
-        // 2. Cargar Sucursales para el Modal de Contratar
-        // (Aquí es donde tronaba antes porque no encontraba llenarSelect)
-        const respSuc = await fetch('/api/sucursales');
-        const sucursales = await respSuc.json();
-        llenarSelect('empSucursal', sucursales, 'idSucursal', 'nombre', 'Selecciona Sucursal...');
+function prepararModalEmpleado(empleado) {
+    const modalEl = document.getElementById('modalEmpleado');
+    const form = document.getElementById('formEmpleado');
+    const loginInput = document.getElementById('empLogin');
+    const loginHelp = document.getElementById('loginHelp');
+    
+    form.reset();
+    document.getElementById('empPass').value = '';
+    document.getElementById('empPassConfirm').value = '';
 
-    } catch (error) {
-        console.error("Error cargando empleados:", error);
+    if (empleado) {
+        // MODO EDICIÓN
+        document.getElementById('tituloModalEmpleado').textContent = "Editar Empleado";
+        document.getElementById('empId').value = empleado.idUsuario || empleado.idEmpleado; 
+        document.getElementById('empNombre').value = empleado.persona.nombre;
+        document.getElementById('empApellido').value = empleado.persona.primerApellido;
+        
+        // TRUCO VISUAL: Mostramos esto para que no se vea vacío
+        loginInput.value = empleado.login || 'Usuario Registrado (No editable)';
+        loginInput.disabled = true; 
+        loginHelp.style.display = 'block'; // Mostramos el mensajito de ayuda
+        
+        document.getElementById('empRol').value = empleado.idRol || 2;
+    } else {
+        // MODO CREACIÓN
+        document.getElementById('tituloModalEmpleado').textContent = "Contratar Nuevo Talento";
+        document.getElementById('empId').value = "";
+        
+        loginInput.value = ""; 
+        loginInput.disabled = false; // Aquí sí dejamos escribir
+        loginHelp.style.display = 'none';
     }
+    
+    new bootstrap.Modal(modalEl).show();
 }
 
 async function guardarEmpleado() {
+    const id = document.getElementById('empId').value;
     const nombre = document.getElementById('empNombre').value;
     const apellido = document.getElementById('empApellido').value;
-    const idSucursal = document.getElementById('empSucursal').value;
     const login = document.getElementById('empLogin').value;
-    const password = document.getElementById('empPassword').value;
+    const rol = document.getElementById('empRol').value;
+    
+    const pass = document.getElementById('empPass').value;
+    const passConfirm = document.getElementById('empPassConfirm').value;
+    
+    if(!nombre || !apellido || !login) return Swal.fire('Error', 'Faltan datos obligatorios', 'warning');
+    
+    // Si es NUEVO, password obligatorio
+    if(!id && !pass) return Swal.fire('Requerido', 'Asigna una contraseña inicial', 'warning');
+    // Validar coincidencia
+    if(pass && pass !== passConfirm) return Swal.fire('Error', 'Las contraseñas no coinciden', 'error');
+    let url, method, payload;
 
-    if (!nombre || !apellido || !idSucursal || !login || !password) {
-        mostrarNotificacion("Por favor llena todos los datos del empleado.", "warning");
-        return;
+    if (id) {
+        // MODO EDICIÓN (PUT a /api/usuarios/{id})
+        url = `${API_URL}/usuarios/${id}`;
+        method = 'PUT';
+        payload = {
+            // Mandamos estructura para UsuarioDto
+            nombre: nombre,
+            primerApellido: apellido,
+            login: login,
+            idRol: parseInt(rol),
+            password: pass ? pass : null // Solo si hay pass nueva
+        };
+    } else {
+        // MODO CREACIÓN (POST a /api/empleados/nuevo)
+        url = `${API_URL}/empleados/nuevo`;
+        method = 'POST';
+        payload = {
+            // Mandamos estructura PLANA para AltaEmpleadoDto
+            nombre: nombre,
+            primerApellido: apellido,
+            segundoApellido: "", // Opcional
+            idSucursal: 1, // Default (o toma el value de un select si lo tienes)
+            login: login,
+            password: pass
+        };
     }
 
-    const nuevoEmpleado = {
-        nombre: nombre,
-        primerApellido: apellido,
-        segundoApellido: null,
-        idSucursal: parseInt(idSucursal),
-        login: login,
-        password: password
-    };
-
     try {
-        const respuesta = await fetch('/api/empleados/nuevo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(nuevoEmpleado)
+        const resp = await fetch(url, { 
+            method: method, 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(payload) 
         });
-
-        if (respuesta.ok) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Contratado!',
-                text: 'El nuevo barbero ha sido registrado.',
-                background: '#1e1e1e', color: '#fff', confirmButtonColor: '#cda45e'
-            }).then(() => {
-                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalNuevoEmpleado'));
-                modal.hide();
-                cargarEmpleados(); // Recargar la lista
-            });
+        
+        if(resp.ok) {
+            Swal.fire('Éxito', 'Información guardada', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('modalEmpleado')).hide();
+            cargarEmpleados();
         } else {
-            const error = await respuesta.json();
-            mostrarNotificacion(error.message || "Error al registrar.", "error");
+            const err = await resp.json();
+            Swal.fire('Error', err.message || 'Error al guardar', 'error');
         }
-    } catch (e) {
-        mostrarNotificacion("Error de conexión.", "error");
-    }
+    } catch(e) { console.error(e); Swal.fire('Error', 'Fallo de conexión', 'error'); }
 }
 
-
-// ==========================================
-//  MODAL: AGENDAR CITA (Catálogos)
-// ==========================================
-async function cargarClientes() {
-    try {
-        const respuesta = await fetch('/api/personas'); 
-        const personas = await respuesta.json();
-        const select = document.getElementById('selectCliente');
-        // Aquí usamos la función global
-        select.innerHTML = '<option value="" selected disabled>Selecciona al Cliente...</option>';
-        personas.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.idPersona;
-            opt.textContent = `${p.nombre} ${p.primerApellido} (ID: ${p.idPersona})`;
-            select.appendChild(opt);
-        });
-    } catch (error) { console.error(error); }
-}
-
-async function cargarCatalogos() {
-    try {
-        const respServicios = await fetch('/api/servicios');
-        const servicios = await respServicios.json();
-        const container = document.getElementById('containerServicios');
-        container.innerHTML = '';
-
-        servicios.forEach(serv => {
-            let precioSimulado = 200; 
-            if (serv.idServicio === 2) precioSimulado = 180;
-            if (serv.idServicio === 3) precioSimulado = 350; 
-            if (serv.idServicio === 4) precioSimulado = 600; 
-            if (serv.idServicio === 5) precioSimulado = 250; 
-            if (serv.idServicio === 6) precioSimulado = 150; 
-
-            const col = document.createElement('div');
-            col.className = 'col-md-6'; 
-            col.innerHTML = `
-                <div class="service-card" onclick="seleccionarServicio(this, ${serv.idServicio}, ${serv.duracion}, ${precioSimulado})">
-                    <i class="bi bi-scissors service-icon-bg"></i>
-                    <div class="service-header">
-                        <div class="service-title">${serv.nombre}</div>
-                        <div class="service-price">$${precioSimulado}</div>
-                    </div>
-                    <p class="service-desc">"${serv.descripcion || 'Servicio Profesional'}"</p>
-                    <div class="mt-3 text-end"><span class="badge bg-dark border border-secondary text-white-50 rounded-pill fw-normal">⏱ ${serv.duracion} min</span></div>
-                </div>`;
-            container.appendChild(col);
-        });
-
-        const respSucursales = await fetch('/api/sucursales');
-        const sucursales = await respSucursales.json();
-        llenarSelect('selectSucursal', sucursales, 'idSucursal', 'nombre', '📍 Elige una Sucursal');
-
-        const respEmpleados = await fetch('/api/empleados');
-        const empleados = await respEmpleados.json();
-        const selectEmp = document.getElementById('selectEmpleado');
-        selectEmp.innerHTML = '<option value="" selected disabled>✂️ Primero elige sucursal...</option>';
-        empleados.forEach(emp => {
-            const option = document.createElement('option');
-            option.value = emp.idEmpleado;
-            option.textContent = `${emp.persona.nombre} - ${emp.sucursal.nombre}`;
-            selectEmp.appendChild(option);
-        });
-    } catch (error) { console.error("Error catálogos:", error); }
-}
-
-// ... (El resto de la lógica de selección, cálculo de tiempo, guardarCita y cancelar es idéntica) ...
-// (Pega aquí las funciones: seleccionarServicio, actualizarInfoTiempo, guardarCita, confirmarCancelacion, eliminarCita, cerrarSesion)
-
-function seleccionarServicio(card, id, duracion, precio) {
-    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    document.getElementById('inputServicioId').value = id;
-    document.getElementById('inputServicioDuracion').value = duracion;
-    document.getElementById('txtTotal').textContent = `$${precio.toFixed(2)}`;
-    actualizarInfoTiempo();
-}
-
-document.getElementById('fechaInicio').addEventListener('change', actualizarInfoTiempo);
+// Auxiliares (Tiempo, Logout)
+document.getElementById('fechaInicio')?.addEventListener('change', actualizarInfoTiempo);
 
 function actualizarInfoTiempo() {
     const inicioVal = document.getElementById('fechaInicio').value;
     const duracion = parseInt(document.getElementById('inputServicioDuracion').value);
     const txtHoraFin = document.getElementById('txtHoraFin');
     if (inicioVal && duracion) {
-        const fechaInicio = new Date(inicioVal);
-        const fechaFin = new Date(fechaInicio.getTime() + duracion * 60000);
-        txtHoraFin.textContent = `${fechaFin.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} hrs`;
-        txtHoraFin.className = 'text-warning fw-bold';
-    } else {
-        txtHoraFin.textContent = "--:--";
+        const f = new Date(inicioVal);
+        const fFin = new Date(f.getTime() + duracion * 60000);
+        txtHoraFin.textContent = `${fFin.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+    }
+}
+function cerrarSesion() { localStorage.removeItem('usuario'); window.location.href = 'index.html'; }
+
+// HELPER OJO (pass)
+function setupToggle(btnId, inputId, iconId) {
+    const btn = document.getElementById(btnId);
+    if(btn){
+        btn.addEventListener('click', () => {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            
+            // Si es pass, lo volvemos texto. Si es texto, pass.
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            
+            // Cambiamos el icono
+            icon.classList.toggle('bi-eye');
+            icon.classList.toggle('bi-eye-slash');
+        });
     }
 }
 
-async function guardarCita() {
-    const idClienteSeleccionado = document.getElementById('selectCliente').value;
-    const idServicio = document.getElementById('inputServicioId').value;
-    const duracion = parseInt(document.getElementById('inputServicioDuracion').value);
-    const idSucursal = document.getElementById('selectSucursal').value;
-    const idEmpleado = document.getElementById('selectEmpleado').value;
-    const fechaInicioVal = document.getElementById('fechaInicio').value; 
+async function cargarClientes() {
+    try {
+        const respuesta = await fetch('/api/usuarios/clientes'); 
+        
+        if (!respuesta.ok) {
+            console.error("Error al llamar API Clientes:", respuesta.status);
+            return;
+        }
 
-    if (!idClienteSeleccionado || !idServicio || !idSucursal || !idEmpleado || !fechaInicioVal) {
-        Swal.fire({icon: 'warning', title: 'Faltan datos', text: 'Completa todos los campos.'});
-        return;
+        const usuariosClientes = await respuesta.json();
+        // console.log("Clientes filtrados:", usuariosClientes); 
+
+        const select = document.getElementById('selectCliente');
+        if (!select) return;
+
+        select.innerHTML = '<option value="" selected disabled>Selecciona al Cliente...</option>';
+        
+        usuariosClientes.forEach(u => {
+            const p = u.persona; 
+            
+            const opt = document.createElement('option');
+            opt.value = p.idPersona; 
+            opt.textContent = `${p.nombre} ${p.primerApellido} (ID: ${p.idPersona})`;
+            select.appendChild(opt);
+        });
+    } catch (error) { 
+        console.error("Error cargando clientes:", error); 
     }
+}
 
-    const fechaInicioObj = new Date(fechaInicioVal);
-    const fechaFinObj = new Date(fechaInicioObj.getTime() + duracion * 60000);
-    const toIsoString = (date) => date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0') + 'T' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0') + ':00';
+// ==========================================
+//  TAB 3: GESTIÓN DE SERVICIOS (CRUD)
+// ==========================================
 
-    const nuevaCita = {
-        idCliente: parseInt(idClienteSeleccionado),
-        idServicio: parseInt(idServicio),
-        idSucursal: parseInt(idSucursal),
-        idEmpleado: parseInt(idEmpleado),
-        fechaInicio: toIsoString(fechaInicioObj),
-        fechaFin: toIsoString(fechaFinObj)
-    };
+async function cargarAdminServicios() {
+    const tbody = document.getElementById('tablaServiciosAdmin');
+    if(!tbody) return;
+    
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Cargando catálogo...</td></tr>';
 
     try {
-        const respuesta = await fetch('/api/citas', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(nuevaCita)
-        });
+        const resp = await fetch(`${API_URL}/servicios`);
+        const servicios = await resp.json();
+        tbody.innerHTML = '';
 
-        if (respuesta.ok) {
-            Swal.fire({icon: 'success', title: '¡Listo!', text: 'Cita agendada.'}).then(() => {
-                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalNuevaCita'));
-                modal.hide();
-                cargarCitas();
-            });
-        } else {
-            const error = await respuesta.json();
-            Swal.fire({icon: 'error', title: 'Error', text: error.message || "Horario ocupado."});
+        // Filtramos solo los activos (activo === 1)
+        const activos = servicios.filter(s => s.activo === 1);
+
+        if (activos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No hay servicios activos.</td></tr>';
+            return;
         }
-    } catch (e) {
-        mostrarNotificacion("Error de conexión.", "error");
-    }
+
+        activos.forEach(s => {
+            let precio = s.precio ? s.precio : 0;
+            const fila = `
+                <tr>
+                    <td class="ps-4 fw-bold text-white">${s.nombre}</td>
+                    <td class="text-muted small">${s.descripcion || '-'}</td>
+                    <td><span class="badge bg-dark border border-secondary text-light">${s.duracion} min</span></td>
+                    <td class="text-gold fw-bold">$${precio.toFixed(2)}</td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-light me-2 border-0" onclick='prepararModalServicio(${JSON.stringify(s)})'>
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger border-0" onclick="eliminarServicio(${s.idServicio})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += fila;
+        });
+    } catch (e) { console.error(e); }
 }
 
-function confirmarCancelacion(idCita) {
+function prepararModalServicio(servicio) {
+    const modalEl = document.getElementById('modalServicio');
+    const form = document.getElementById('formServicio');
+    form.reset();
+
+    if (servicio) {
+        document.getElementById('tituloModalServicio').textContent = "Editar Servicio";
+        document.getElementById('servId').value = servicio.idServicio;
+        document.getElementById('servNombre').value = servicio.nombre;
+        document.getElementById('servDesc').value = servicio.descripcion;
+        document.getElementById('servPrecio').value = servicio.precio;
+        document.getElementById('servDuracion').value = servicio.duracion;
+    } else {
+        document.getElementById('tituloModalServicio').textContent = "Nuevo Servicio";
+        document.getElementById('servId').value = "";
+    }
+    new bootstrap.Modal(modalEl).show();
+}
+
+async function guardarServicio() {
+    const id = document.getElementById('servId').value;
+    const nombre = document.getElementById('servNombre').value;
+    const desc = document.getElementById('servDesc').value;
+    const precio = document.getElementById('servPrecio').value;
+    const duracion = document.getElementById('servDuracion').value;
+
+    if (!nombre || !precio || !duracion) return Swal.fire('Error', 'Faltan datos obligatorios', 'warning');
+
+    const payload = {
+        nombre: nombre,
+        descripcion: desc,
+        precio: parseFloat(precio),
+        duracion: parseInt(duracion),
+        activo: 1
+    };
+
+    let url = id ? `${API_URL}/servicios/${id}` : `${API_URL}/servicios`;
+    let method = id ? 'PUT' : 'POST';
+
+    try {
+        const resp = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+            Swal.fire('Éxito', 'Catálogo actualizado', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('modalServicio')).hide();
+            cargarAdminServicios();
+            cargarCatalogos(); // Actualizar también el modal de citas
+        } else {
+            Swal.fire('Error', 'No se pudo guardar', 'error');
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function eliminarServicio(id) {
     Swal.fire({
-        title: '¿Cancelar Cita?',
-        text: "No podrás deshacer esto.",
+        title: '¿Borrar servicio?',
+        text: "Ya no aparecerá en la agenda.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sí, borrar',
-        background: '#1e1e1e',
-        color: '#fff'
-    }).then((result) => {
-        if (result.isConfirmed) eliminarCita(idCita);
-    });
-}
-
-async function eliminarCita(id) {
-    try {
-        const respuesta = await fetch(`/api/citas/${id}`, { method: 'DELETE' });
-        if (respuesta.ok) {
-            mostrarNotificacion("Eliminado correctamente.", "success");
-            cargarCitas();
-        } else {
-            mostrarNotificacion("No se pudo eliminar.", "error");
+        confirmButtonText: 'Sí, borrar'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await fetch(`${API_URL}/servicios/${id}`, { method: 'DELETE' });
+                Swal.fire('Eliminado', '', 'success');
+                cargarAdminServicios();
+            } catch (e) { Swal.fire('Error', '', 'error'); }
         }
-    } catch (error) {
-        mostrarNotificacion("Error de conexión.", "error");
-    }
-}
-
-function cerrarSesion() {
-    localStorage.removeItem('usuario');
-    window.location.href = 'index.html';
+    });
 }

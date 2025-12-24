@@ -1,21 +1,18 @@
-/* --- Navbar --- */
+/* =========================================
+   1. ESTILOS CLÁSICOS (AGENDA Y NAVBAR)
+   ========================================= */
 .navbar-barber {
     background-color: #000 !important;
     border-bottom: 2px solid var(--barber-gold);
 }
-
 .navbar-brand-barber {
     color: var(--barber-gold) !important;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 2px;
 }
-
-/* --- Tabla --- */
-.table-barber {
-    border-color: #333;
-}
-
+/* Tabla Agenda Clásica */
+.table-barber { border-color: #333; }
 .table-barber thead th {
     background-color: #1a1a1a;
     color: var(--barber-gold);
@@ -24,92 +21,100 @@
     letter-spacing: 1px;
     border-bottom: 2px solid var(--barber-gold);
 }
+.table-hover.table-barber tbody tr:hover { background-color: #252525; }
 
-.table-hover.table-barber tbody tr:hover {
-    background-color: #252525;
-}
-
-/* --- TARJETAS DE SERVICIO (GRID MEJORADO) --- */
+/* =========================================
+   2. TARJETAS DE SERVICIOS (AGENDAR CITA)
+   ========================================= */
 .service-card {
     background-color: #232323;
     border: 1px solid #333;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    padding: 20px;
+    padding: 15px;
     height: 100%;
     position: relative;
     overflow: hidden;
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
-    z-index: 1;
+    align-items: center;
 }
-
 .service-card:hover {
     border-color: var(--barber-gold);
     background-color: #2a2a2a;
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
-
 .service-card.selected {
     background-color: var(--barber-gold);
     border-color: var(--barber-gold);
     box-shadow: 0 0 15px rgba(205, 164, 94, 0.4);
 }
-
-/* ÍCONO DE FONDO (MARCA DE AGUA) */
+/* Estilos internos de la tarjeta */
+.service-title { font-weight: 700; color: white; text-transform: uppercase; font-size: 0.9rem; }
+.service-price { font-weight: 800; color: var(--barber-gold); font-size: 1.1rem; }
+.service-card.selected .service-title, 
+.service-card.selected .service-price { color: #000 !important; }
+/* Ícono de fondo fantasma */
 .service-icon-bg {
-    position: absolute;
-    right: -10px;
-    bottom: -10px;
-    font-size: 4rem;
-    color: rgba(255, 255, 255, 0.03);
-    transform: rotate(-15deg);
-    z-index: -1;
-    pointer-events: none;
+    position: absolute; right: -5px; bottom: -5px;
+    font-size: 3.5rem; color: rgba(255, 255, 255, 0.03);
+    transform: rotate(-15deg); pointer-events: none;
 }
+.service-card.selected .service-icon-bg { color: rgba(0,0,0,0.05); }
 
-/* Header Limpio */
-.service-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-    gap: 10px;
-}
-
-.service-title {
+/* =========================================
+   3. ESTILOS PREMIUM (EQUIPO Y PERFIL)
+   ========================================= */
+.modal-barber .modal-content {
+    background-color: #121212;
+    border: 1px solid #333;
     color: white;
-    font-weight: 700;
-    font-size: 1rem;
-    text-transform: uppercase;
-    line-height: 1.2;
-    margin: 0;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+}
+.modal-barber .modal-header { border-bottom: 1px solid var(--barber-gold); }
+.modal-barber .modal-footer { border-top: 1px solid #222; background-color: #0e0e0e; }
+.modal-title-barber { color: var(--barber-gold); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Inputs "Material" (Línea abajo) */
+.form-control-barber, .form-select-barber {
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid #444 !important;
+    border-radius: 0 !important;
+    color: white !important;
+    padding: 10px 5px;
+}
+.form-control-barber:focus, .form-select-barber:focus {
+    background-color: rgba(205, 164, 94, 0.05) !important;
+    border-bottom-color: var(--barber-gold) !important;
+    box-shadow: none !important;
+}
+.form-label-barber { color: var(--barber-gold); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; }
+
+/* Avatar Ring */
+.avatar-ring {
+    width: 90px; height: 90px; margin: 0 auto;
+    border-radius: 50%; border: 2px solid var(--barber-gold); padding: 4px;
+}
+.avatar-img {
+    width: 100%; height: 100%; background-color: #222;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; color: #fff;
 }
 
-.service-price {
-    color: var(--barber-gold);
-    font-weight: 800;
-    font-size: 1.2rem;
-    white-space: nowrap;
+/* Tarjetas de Empleado */
+.employee-card {
+    background: linear-gradient(145deg, #1e1e1e, #141414);
+    border: 1px solid #333;
+    border-radius: 15px;
+    transition: all 0.3s;
 }
-
-/* Descripción */
-.service-desc {
-    color: #aaa;
-    font-size: 0.8rem !important;
-    font-style: italic;
-    font-weight: 300;
-    line-height: 1.4;
-    opacity: 0.9;
-    margin-bottom: 0;
-    padding-right: 10px;
+.employee-card:hover {
+    transform: translateY(-5px); border-color: var(--barber-gold);
 }
-
-/* Ajustes al seleccionar */
-.service-card.selected .service-title,
-.service-card.selected .service-price { color: #000; }
-.service-card.selected .service-desc { color: #222; opacity: 1; font-weight: 500; }
-.service-card.selected .service-icon-bg { color: rgba(0, 0, 0, 0.05); }
+.card-role-badge {
+    background: rgba(255,255,255,0.05); color: #aaa;
+    border: 1px solid #333; padding: 4px 12px;
+    border-radius: 20px; font-size: 0.75rem; text-transform: uppercase;
+}

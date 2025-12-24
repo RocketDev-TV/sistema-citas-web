@@ -154,3 +154,22 @@ div:where(.swal2-icon).swal2-success .swal2-success-ring {
     background-color: #333;
     color: white;
 }
+
+/* --- VALIDACIÓN DE PASSWORD --- */
+.transition-item {
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+/* Cuando la regla se cumple */
+.rule-valid {
+    color: #198754 !important; /* Verde Bootstrap */
+    font-weight: bold;
+    opacity: 1;
+    text-decoration: none;
+}
+
+/* Efecto de 'tachado' sutil al cumplir (opcional) o cambio de icono */
+.rule-valid i {
+    color: #198754;
+}

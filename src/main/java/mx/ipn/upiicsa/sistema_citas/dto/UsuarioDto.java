@@ -8,4 +8,6 @@ public class UsuarioDto {
     private String login;
     private String password;
     private Integer idRol; // 1=Admin, 2=Empleado, 3=Cliente
+    private String nombre;
+    private String primerApellido;
 }

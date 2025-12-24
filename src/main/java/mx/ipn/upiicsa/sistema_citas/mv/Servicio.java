@@ -2,10 +2,11 @@ package mx.ipn.upiicsa.sistema_citas.mv;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.math.BigDecimal;
 
 @Data
 @Entity
-@Table(name = "cci01_servicio") // Tu tabla de la BDD
+@Table(name = "cci01_servicio")
 public class Servicio {
 
     @Id
@@ -20,8 +21,11 @@ public class Servicio {
     private String descripcion;
 
     @Column(name = "st_activo")
-    private Integer activo; // 1 = Sí, 0 = No (según tu SQL es int4)
+    private Integer activo;
 
     @Column(name = "nu_duracion")
-    private Integer duracion; // En minutos
+    private Integer duracion;
+
+    @Column(name = "nu_precio")
+    private BigDecimal precio; 
 }

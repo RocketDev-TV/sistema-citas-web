@@ -23,4 +23,17 @@ public class ServicioController {
     public Servicio guardar(@RequestBody Servicio servicio) {
         return servicioBs.registrar(servicio);
     }
+
+    // --- ACTUALIZAR ---
+    @PutMapping("/{id}")
+    public Servicio actualizar(@PathVariable Integer id, @RequestBody Servicio servicio) {
+        return servicioBs.actualizar(id, servicio);
+    }
+
+    // --- ELIMINAR ---
+    @DeleteMapping("/{id}")
+    public void eliminar(@PathVariable Integer id) {
+        servicioBs.eliminar(id);
+    }
+
 }

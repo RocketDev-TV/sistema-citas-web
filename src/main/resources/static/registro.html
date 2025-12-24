@@ -61,16 +61,51 @@
 
                                         <div class="mb-3">
                                             <label class="form-label ps-2">USUARIO (LOGIN)</label>
-                                            <input type="text" id="login" class="form-control" placeholder="Ej. juan.perez" required>
+                                            <input type="text" id="login" class="form-control"
+                                                placeholder="Ej. juan.perez" required>
                                         </div>
-                                        
-                                        <div class="mb-4">
+
+                                        <div class="mb-3">
                                             <label class="form-label ps-2">CONTRASEÑA</label>
                                             <div class="input-group">
-                                                <input type="password" id="password" class="form-control" placeholder="••••••" required>
+                                                <input type="password" id="password" class="form-control"
+                                                    placeholder="••••••" required>
                                                 <button class="btn btn-eye px-3" type="button" id="togglePassword">
                                                     <i class="bi bi-eye-slash" id="iconEye"></i>
                                                 </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label ps-2">CONFIRMAR CONTRASEÑA</label>
+                                            <div class="input-group">
+                                                <input type="password" id="confirmPassword" class="form-control"
+                                                    placeholder="Repite la contraseña" required>
+                                                <button class="btn btn-eye px-3" type="button"
+                                                    id="toggleConfirmPassword">
+                                                    <i class="bi bi-eye-slash" id="iconEyeConfirm"></i>
+                                                </button>
+                                            </div>
+                                            <div id="msgCoincide" class="form-text text-danger d-none fw-bold ps-2">
+                                                <i class="bi bi-x-circle-fill"></i> Las contraseñas no coinciden
+                                            </div>
+                                        </div>
+
+                                        <div class="card bg-dark border-secondary mb-4">
+                                            <div class="card-body py-2 px-3">
+                                                <small class="text-muted text-uppercase fw-bold"
+                                                    style="font-size: 0.7rem;">Requisitos de seguridad:</small>
+                                                <ul class="list-unstyled mb-0 mt-2 small text-secondary">
+                                                    <li id="ruleLen" class="mb-1 transition-item"><i
+                                                            class="bi bi-circle me-2"></i>Mínimo 8 caracteres</li>
+                                                    <li id="ruleMayus" class="mb-1 transition-item"><i
+                                                            class="bi bi-circle me-2"></i>Una mayúscula (A-Z)</li>
+                                                    <li id="ruleNum" class="mb-1 transition-item"><i
+                                                            class="bi bi-circle me-2"></i>Un número (0-9)</li>
+                                                    <li id="ruleChar" class="mb-0 transition-item"><i
+                                                            class="bi bi-circle me-2"></i>Un carácter especial (!@#$...)
+                                                    </li>
+                                                </ul>
                                             </div>
                                         </div>
 

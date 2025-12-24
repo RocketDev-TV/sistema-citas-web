@@ -14,18 +14,20 @@
     <nav class="navbar navbar-expand-lg navbar-barber shadow-sm mb-5">
         <div class="container-fluid px-4">
             <a class="navbar-brand navbar-brand-barber" href="#">💈 Barber King</a>
-            <div class="d-flex align-items-center">
-                <div class="me-4 text-end d-none d-md-block">
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end d-none d-md-block lh-1">
                     <div class="text-white fw-bold" id="nombreUsuario">...</div>
                     <small class="text-muted" id="rolUsuario">Admin</small>
                 </div>
+                <button class="btn btn-outline-warning btn-sm px-3 fw-bold" onclick="abrirMiPerfil()">
+                    <i class="bi bi-person-circle me-2"></i>PERFIL
+                </button>
                 <button class="btn btn-outline-secondary btn-sm rounded-0 text-uppercase" onclick="cerrarSesion()">Salir 🚪</button>
             </div>
         </div>
     </nav>
 
     <div class="container-fluid px-4">
-        
         <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active rounded-pill px-4 me-2 fw-bold" id="pills-agenda-tab" data-bs-toggle="pill" data-bs-target="#pills-agenda" type="button" onclick="cargarCitas()">
@@ -33,8 +35,13 @@
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link rounded-pill px-4 fw-bold" id="pills-equipo-tab" data-bs-toggle="pill" data-bs-target="#pills-equipo" type="button" onclick="cargarEmpleados()">
+                <button class="nav-link rounded-pill px-4 me-2 fw-bold" id="pills-equipo-tab" data-bs-toggle="pill" data-bs-target="#pills-equipo" type="button" onclick="cargarEmpleados()">
                     👥 Equipo
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link rounded-pill px-4 fw-bold" id="pills-servicios-tab" data-bs-toggle="pill" data-bs-target="#pills-servicios" type="button" onclick="cargarAdminServicios()">
+                    ✂️ Catálogo
                 </button>
             </li>
         </ul>
@@ -42,114 +49,211 @@
         <div class="tab-content" id="pills-tabContent">
             
             <div class="tab-pane fade show active" id="pills-agenda">
-                <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 1px solid #333;">
-                    <div><h2 class="text-white fw-bold mb-0 text-uppercase">Agenda del Día</h2></div>
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
+                    <h2 class="text-white fw-bold mb-0 text-uppercase">Agenda del Día</h2>
                     <button class="btn btn-barber" data-bs-toggle="modal" data-bs-target="#modalNuevaCita">+ Agendar Cita</button>
                 </div>
-                <div class="card card-login-barber p-0">
+                <div class="card bg-dark border-secondary p-0">
                     <div class="table-responsive">
                         <table class="table table-barber table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th scope="col" class="ps-4">Folio #</th>
-                                    <th scope="col">Cliente VIP</th>
-                                    <th scope="col">Servicio</th>
-                                    <th scope="col">Sucursal</th>
-                                    <th scope="col">Atendido Por</th>
-                                    <th scope="col" class="text-end pe-4">Horario</th>
-                                    <th scope="col"></th>
+                                    <th class="ps-4">Folio</th>
+                                    <th>Cliente</th>
+                                    <th>Servicio</th>
+                                    <th>Sucursal</th>
+                                    <th>Barbero</th>
+                                    <th class="text-end pe-4">Horario</th>
+                                    <th></th>
                                 </tr>
                             </thead>
-                            <tbody id="tablaCitas">
-                                <tr><td colspan="7" class="text-center py-5">Cargando...</td></tr>
-                            </tbody>
+                            <tbody id="tablaCitas"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
             <div class="tab-pane fade" id="pills-equipo">
-                <div class="d-flex justify-content-between align-items-center mb-4 pb-3" style="border-bottom: 1px solid #333;">
-                    <div><h2 class="text-white fw-bold mb-0 text-uppercase">Staff & Barberos</h2></div>
-                    <button class="btn btn-outline-warning rounded-pill text-uppercase fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevoEmpleado">+ Contratar</button>
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
+                    <h2 class="text-white fw-bold mb-0 text-uppercase">Staff & Barberos</h2>
+                    <button class="btn btn-outline-warning rounded-pill text-uppercase fw-bold" onclick="prepararModalEmpleado(null)">+ Contratar</button>
                 </div>
-                <div class="row g-4" id="contenedorEmpleados"></div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="listaEmpleados"></div>
+            </div>
+
+            <div class="tab-pane fade" id="pills-servicios">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
+                    <h2 class="text-white fw-bold mb-0 text-uppercase">Catálogo de Servicios</h2>
+                    <button class="btn btn-outline-warning rounded-pill text-uppercase fw-bold" onclick="prepararModalServicio(null)">+ Nuevo Servicio</button>
+                </div>
+                <div class="card bg-dark border-secondary">
+                    <div class="table-responsive">
+                        <table class="table table-barber table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Servicio</th>
+                                    <th>Descripción</th>
+                                    <th>Duración</th>
+                                    <th>Precio</th>
+                                    <th class="text-end pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaServiciosAdmin"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modalNuevaCita" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modalNuevaCita" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content" style="background-color: var(--barber-card); border: 1px solid #333; color: white;">
-                <div class="modal-header" style="border-bottom: 1px solid var(--barber-gold);">
-                    <h5 class="modal-title fw-bold text-uppercase" style="color: var(--barber-gold);">💈 Agendar Corte</h5>
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title fw-bold text-gold">AGENDAR CORTE</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="formCita">
-                        <label class="form-label small text-muted mb-3 text-uppercase fw-bold">1. Estilo</label>
+                        <label class="form-label-barber mb-3">1. Estilo</label>
                         <div id="containerServicios" class="row g-3 mb-4"></div>
                         <input type="hidden" id="inputServicioId">
                         <input type="hidden" id="inputServicioDuracion">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label small text-muted">2. Cliente</label>
-                                <select id="selectCliente" class="form-select bg-dark text-white border-secondary" required></select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label small text-muted">3. Sucursal</label>
-                                <select id="selectSucursal" class="form-select bg-dark text-white border-secondary" required></select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label small text-muted">4. Barbero</label>
-                                <select id="selectEmpleado" class="form-select bg-dark text-white border-secondary" required></select>
-                            </div>
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label-barber">Cliente</label><select id="selectCliente" class="form-select-barber"></select></div>
+                            <div class="col-md-4"><label class="form-label-barber">Sucursal</label><select id="selectSucursal" class="form-select-barber"></select></div>
+                            <div class="col-md-4"><label class="form-label-barber">Barbero</label><select id="selectEmpleado" class="form-select-barber"></select></div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label small text-muted">5. Inicio</label>
-                            <input type="datetime-local" id="fechaInicio" class="form-control bg-dark text-white border-secondary" required>
-                            <div id="infoDuracion" class="form-text mt-2 d-flex justify-content-between">
-                                <span class="text-secondary">Duración</span><span class="text-white fw-bold" id="txtHoraFin">--:--</span>
-                            </div>
+                        <div class="mt-3">
+                            <label class="form-label-barber">Fecha Inicio</label>
+                            <input type="datetime-local" id="fechaInicio" class="form-control-barber">
+                            <div class="text-end mt-1"><small class="text-muted">Fin: </small><span id="txtHoraFin" class="text-warning fw-bold">--:--</span></div>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer d-flex justify-content-between align-items-center" style="border-top: 1px solid #333; background-color: #1a1a1a;">
-                    <div><small class="text-muted d-block text-uppercase">Total</small><span id="txtTotal" class="fw-bold text-gold h4">$0.00</span></div>
-                    <div><button type="button" class="btn btn-outline-secondary btn-sm me-2 rounded-pill" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-barber btn-sm rounded-pill px-4" onclick="guardarCita()">Confirmar</button></div>
+                <div class="modal-footer justify-content-between bg-black">
+                    <span id="txtTotal" class="h4 text-gold fw-bold">$0.00</span>
+                    <button type="button" class="btn btn-barber rounded-pill px-4" onclick="guardarCita()">CONFIRMAR</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modalNuevoEmpleado" tabindex="-1" aria-hidden="true">
+    <div class="modal fade modal-barber" id="modalEmpleado" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="background-color: var(--barber-card); border: 1px solid #333; color: white;">
-                <div class="modal-header" style="border-bottom: 1px solid var(--barber-gold);">
-                    <h5 class="modal-title fw-bold text-uppercase" style="color: var(--barber-gold);">👤 Contratar Talento</h5>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title-barber" id="tituloModalEmpleado">Nuevo Talento</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="formEmpleado">
-                        <h6 class="text-muted text-uppercase small mb-3">Datos Personales</h6>
-                        <div class="row g-2 mb-3">
-                            <div class="col-6"><input type="text" id="empNombre" class="form-control" placeholder="Nombre" required></div>
-                            <div class="col-6"><input type="text" id="empApellido" class="form-control" placeholder="Apellido" required></div>
+                        <input type="hidden" id="empId">
+                        <div class="row g-3 mb-3">
+                            <div class="col-6"><label class="form-label-barber">Nombre</label><input type="text" id="empNombre" class="form-control-barber"></div>
+                            <div class="col-6"><label class="form-label-barber">Apellido</label><input type="text" id="empApellido" class="form-control-barber"></div>
                         </div>
-                        <h6 class="text-muted text-uppercase small mb-3">Asignación</h6>
                         <div class="mb-3">
-                            <select id="empSucursal" class="form-select bg-dark text-white border-secondary" required>
-                                <option selected disabled>Cargando...</option>
+                            <label class="form-label-barber">Rol</label>
+                            <select id="empRol" class="form-select-barber">
+                                <option value="2">Staff / Recepción</option>
+                                <option value="2">Barbero Profesional</option>
                             </select>
                         </div>
-                        <h6 class="text-muted text-uppercase small mb-3">Acceso al Sistema</h6>
-                        <div class="mb-3"><input type="text" id="empLogin" class="form-control" placeholder="Usuario (Login)" required></div>
-                        <div class="mb-3"><input type="password" id="empPassword" class="form-control" placeholder="Contraseña Inicial" required></div>
+                        <div class="mb-3">
+                            <label class="form-label-barber">Usuario</label>
+                            <input type="text" id="empLogin" class="form-control-barber">
+                            <div id="loginHelp" class="form-text text-muted small" style="display:none">* No editable</div>
+                        </div>
+                        <div class="mt-4 p-3 bg-black bg-opacity-50 border border-secondary rounded">
+                            <h6 class="text-warning small mb-2"><i class="bi bi-lock"></i> Seguridad</h6>
+                            <div class="input-group mb-2">
+                                <input type="password" id="empPass" class="form-control-barber border-end-0" placeholder="Nueva pass">
+                                <button class="btn btn-outline-secondary border-start-0 border-top-0" type="button" id="toggleEmpPass"><i class="bi bi-eye-slash" id="iconEmpPass"></i></button>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="empPassConfirm" class="form-control-barber border-end-0" placeholder="Confirmar pass">
+                                <button class="btn btn-outline-secondary border-start-0 border-top-0" type="button" id="toggleEmpPassConfirm"><i class="bi bi-eye-slash" id="iconEmpPassConfirm"></i></button>
+                            </div>
+                        </div>
                     </form>
                 </div>
-                <div class="modal-footer" style="border-top: 1px solid #333;">
-                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-barber btn-sm rounded-pill px-4" onclick="guardarEmpleado()">CONTRATAR</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-barber rounded-pill px-4" onclick="guardarEmpleado()">GUARDAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-barber" id="modalMiPerfil" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title-barber">MI PERFIL</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="avatar-ring mb-2"><div class="avatar-img"><i class="bi bi-person-circle"></i></div></div>
+                        <h4 class="text-white" id="perfilNombreDisplay">...</h4>
+                    </div>
+                    <form id="formPerfil">
+                        <div class="row g-3">
+                            <div class="col-6"><label class="form-label-barber">Nombre</label><input type="text" id="perfilNombre" class="form-control-barber"></div>
+                            <div class="col-6"><label class="form-label-barber">Apellido</label><input type="text" id="perfilApellido" class="form-control-barber"></div>
+                        </div>
+                        <div class="mt-4 border-top border-secondary pt-3">
+                            <label class="form-label-barber text-danger w-100">Cambiar Contraseña</label>
+                            <div class="input-group mb-2">
+                                <input type="password" id="perfilPass" class="form-control-barber border-end-0" placeholder="Nueva">
+                                <button class="btn btn-outline-secondary border-start-0 border-top-0" type="button" id="togglePerfilPass"><i class="bi bi-eye-slash" id="iconPerfilPass"></i></button>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="perfilPassConfirm" class="form-control-barber border-end-0" placeholder="Repetir">
+                                <button class="btn btn-outline-secondary border-start-0 border-top-0" type="button" id="togglePerfilPassConfirm"><i class="bi bi-eye-slash" id="iconPerfilPassConfirm"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-barber w-100 rounded-pill" onclick="actualizarMiPerfil()">ACTUALIZAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-barber" id="modalServicio" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title-barber" id="tituloModalServicio">Servicio</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formServicio">
+                        <input type="hidden" id="servId">
+                        <div class="mb-3">
+                            <label class="form-label-barber">Nombre del Corte</label>
+                            <input type="text" id="servNombre" class="form-control-barber" placeholder="Ej. Fade Navaja" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-barber">Descripción</label>
+                            <input type="text" id="servDesc" class="form-control-barber" placeholder="Detalles del servicio">
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label-barber">Precio ($)</label>
+                                <input type="number" id="servPrecio" class="form-control-barber" placeholder="0.00" step="0.50" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label-barber">Duración (min)</label>
+                                <input type="number" id="servDuracion" class="form-control-barber" placeholder="30" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-barber rounded-pill px-4" onclick="guardarServicio()">GUARDAR</button>
                 </div>
             </div>
         </div>
