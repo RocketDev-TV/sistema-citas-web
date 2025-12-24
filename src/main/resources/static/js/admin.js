@@ -39,18 +39,22 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 //  CATÁLOGOS 
 // ==========================================
-
 async function cargarCatalogos() {
     try {
         // 1. Cargar Servicios
         const respServicios = await fetch(`${API_URL}/servicios`);
         const servicios = await respServicios.json();
         
+        // 👇👇 EL FILTRO QUE FALTABA 👇👇
+        // Solo mostramos los que tienen activo = 1
+        const serviciosActivos = servicios.filter(s => s.activo === 1); 
+
         const container = document.getElementById('containerServicios');
         if(container) {
             container.innerHTML = '';
-            servicios.forEach(serv => {
-                // OBTENER PRECIO REAL (Si es null, pone 0)
+            
+            // Usamos la lista filtrada 'serviciosActivos' en vez de 'servicios'
+            serviciosActivos.forEach(serv => {
                 let precioReal = serv.precio ? serv.precio : 0;
                 let desc = serv.descripcion || "Servicio profesional.";
 
@@ -73,12 +77,11 @@ async function cargarCatalogos() {
             });
         }
 
-        // 2. Cargar Sucursales
+        // 2. Cargar Sucursales y Empleados (Esto se queda igual)
         const respSuc = await fetch(`${API_URL}/sucursales`);
         const sucursales = await respSuc.json();
         llenarSelect('selectSucursal', sucursales, 'idSucursal', 'nombre');
         
-        // 3. Cargar Empleados
         const respEmp = await fetch(`${API_URL}/empleados`);
         const empleados = await respEmp.json();
         llenarSelect('selectEmpleado', empleados, 'idEmpleado', 'persona.nombre');
@@ -512,4 +515,133 @@ async function eliminarServicio(id) {
             } catch (e) { Swal.fire('Error', '', 'error'); }
         }
     });
+}
+
+
+// ==========================================
+//  4. GUARDAR CITA (CORREGIDO - BUG TIMEZONE)
+// ==========================================
+async function guardarCita() {
+    // 1. Obtener referencias
+    const idServicio = document.getElementById('inputServicioId').value;
+    const idCliente = document.getElementById('selectCliente').value;
+    const idSucursal = document.getElementById('selectSucursal').value;
+    const idEmpleado = document.getElementById('selectEmpleado').value;
+    const fechaInicio = document.getElementById('fechaInicio').value; // Viene como "2025-12-24T10:00"
+    const duracion = document.getElementById('inputServicioDuracion').value;
+
+    // 2. Validaciones
+    if (!idServicio) return Swal.fire('Falta Servicio', 'Selecciona un estilo.', 'warning');
+    if (!idCliente) return Swal.fire('Falta Cliente', 'Selecciona al cliente.', 'warning');
+    if (!idSucursal) return Swal.fire('Falta Sucursal', 'Selecciona la sucursal.', 'warning');
+    if (!idEmpleado) return Swal.fire('Falta Barbero', 'Selecciona al barbero.', 'warning');
+    if (!fechaInicio) return Swal.fire('Falta Fecha', 'Selecciona cuándo será la cita.', 'warning');
+
+    // 3. Calcular Fecha Fin
+    const fechaInicioDate = new Date(fechaInicio);
+    const fechaFinDate = new Date(fechaInicioDate.getTime() + (parseInt(duracion) * 60000));
+    
+    // --- CORRECCIÓN AQUÍ 👇 ---
+    // Ajustamos el desfase horario para que .toISOString() nos de la hora LOCAL, no la UTC.
+    const tzOffset = fechaFinDate.getTimezoneOffset() * 60000;
+    const fechaFinLocal = new Date(fechaFinDate.getTime() - tzOffset).toISOString().slice(0, 19);
+    // --------------------------
+
+    const payload = {
+        idCliente: parseInt(idCliente),
+        idServicio: parseInt(idServicio),
+        idSucursal: parseInt(idSucursal),
+        idEmpleado: parseInt(idEmpleado),
+        fechaInicio: fechaInicio, // Mandamos "10:00"
+        fechaFin: fechaFinLocal   // Mandamos "10:30" (Ya corregido)
+    };
+
+    try {
+        const resp = await fetch(`${API_URL}/citas`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+            Swal.fire({
+                title: '¡Cita Agendada!',
+                text: 'El corte ha sido programado.',
+                icon: 'success',
+                confirmButtonColor: '#d4af37',
+                background: '#1e1e1e', color: '#fff'
+            });
+            
+            // Cerrar modal y recargar
+            const modalEl = document.getElementById('modalNuevaCita');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+            
+            cargarCitas();
+            
+            // Actualizar dashboard si existe
+            if (typeof actualizarDashboard === 'function') actualizarDashboard();
+
+        } else {
+            const errorData = await resp.json();
+            // Mostramos el mensaje exacto que manda el backend (ej: Agenda llena)
+            Swal.fire('Atención', errorData.message || 'Horario no disponible.', 'warning');
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+    }
+}
+
+// ==========================================
+//  5. CANCELACIÓN DE CITAS (FUNCIONES FALTANTES)
+// ==========================================
+function confirmarCancelacion(idCita) {
+    Swal.fire({
+        title: '¿Cancelar Cita?',
+        text: "Esta acción liberará el horario.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33', // Rojo peligro
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, borrar',
+        cancelButtonText: 'No',
+        background: '#1e1e1e', // Estilo dark
+        color: '#fff'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            eliminarCita(idCita);
+        }
+    });
+}
+
+async function eliminarCita(id) {
+    try {
+        const resp = await fetch(`${API_URL}/citas/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (resp.ok) {
+            Swal.fire({
+                title: '¡Eliminada!',
+                text: 'La cita ha sido borrada.',
+                icon: 'success',
+                confirmButtonColor: '#d4af37',
+                background: '#1e1e1e',
+                color: '#fff'
+            });
+            
+            cargarCitas(); // Recargamos la tabla para que desaparezca
+            
+            // Actualizamos los contadores de arriba también
+            if (typeof actualizarDashboard === 'function') {
+                actualizarDashboard();
+            }
+        } else {
+            Swal.fire('Error', 'No se pudo eliminar la cita.', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Error', 'Fallo de conexión.', 'error');
+    }
 }
