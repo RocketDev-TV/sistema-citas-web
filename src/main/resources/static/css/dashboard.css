@@ -169,3 +169,73 @@
     background-color: rgba(40, 167, 69, 0.15);
     color: #5dd579;
 }
+
+/* =========================================
+   4. TARJETAS DE MIS CITAS (RESPONSIVE)
+   ========================================= */
+
+/* Estilo base de la tarjeta de cita (Vertical) */
+.card-cita {
+    background-color: #232323;
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 20px;
+    height: 100%;
+    position: relative;
+    /* IMPORTANTE: Esto arregla el "amontonado" */
+    display: flex;
+    flex-direction: column; 
+    justify-content: space-between;
+    transition: transform 0.3s ease;
+}
+
+.card-cita:hover {
+    border-color: var(--barber-gold);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transform: translateY(-5px);
+}
+
+/* Ajustes para el badge de estado */
+.card-cita .badge-status {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+}
+
+/* =========================================
+   5. AJUSTES MÓVILES (MEDIA QUERIES)
+   ========================================= */
+@media (max-width: 768px) {
+    /* En celular, reducimos el título gigante de bienvenida */
+    #saludoGigante {
+        font-size: 2.5rem !important; /* Más chico que el display-4 */
+    }
+
+    /* Ajustamos el padding del contenedor principal */
+    .container.px-4 {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Las tarjetas ocupan todo el ancho y reducimos padding interno */
+    .card-cita {
+        padding: 15px;
+    }
+
+    /* Ajuste de textos dentro de la tarjeta */
+    .card-cita h4 { font-size: 1.1rem; } /* Título del servicio */
+    .card-cita p { font-size: 0.85rem; } /* Dirección */
+
+    /* El bloque del barbero más compacto */
+    .barber-info-box {
+        padding: 10px !important;
+        flex-direction: row; 
+        align-items: center;
+    }
+    
+    /* Botones más grandes para dedos táctiles */
+    .btn-mobile-full {
+        width: 100%;
+        margin-top: 10px;
+    }
+}

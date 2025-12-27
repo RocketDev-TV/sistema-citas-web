@@ -1,5 +1,5 @@
 // ==========================================
-//  LÓGICA DEL DASHBOARD (MODULAR)
+//  LÓGICA DEL DASHBOARD (CORREGIDO - RESET DIARIO)
 // ==========================================
 const API_DASH = '/api'; 
 
@@ -7,18 +7,18 @@ document.addEventListener("DOMContentLoaded", () => {
     actualizarDashboard();
 });
 
-// Hacemos la función global por si quieres llamarla al agendar una cita nueva
 window.actualizarDashboard = async function() {
-    console.log("📊 Actualizando métricas...");
+    console.log("📊 Revisando agenda del día...");
     
     const lblCitas = document.getElementById('lblCitasHoy');
     const lblDinero = document.getElementById('lblDineroHoy');
 
-    // Si no estamos en la página correcta, detenemos
     if (!lblCitas || !lblDinero) return;
 
     try {
-        const res = await fetch(`${API_DASH}/citas`);
+        // Truco Anti-Cache: Agregamos ?t=... para obligar al navegador a pedir datos frescos
+        const res = await fetch(`${API_DASH}/citas?t=${Date.now()}`);
+        
         if (!res.ok) throw new Error("Error API Citas");
         
         const citas = await res.json();
@@ -26,19 +26,23 @@ window.actualizarDashboard = async function() {
         let conteo = 0;
         let dinero = 0;
         
-        // Fecha de hoy en formato local (ej: "24/12/2025")
-        const hoyStr = new Date().toLocaleDateString();
+        // FECHA DE HOY (OBJETO PURO)
+        const hoy = new Date();
 
         citas.forEach(cita => {
-            // Validamos estructura para no romper el loop
             if (cita.bloqueCita && cita.bloqueCita.fechaInicio) {
-                const fechaCita = new Date(cita.bloqueCita.fechaInicio).toLocaleDateString();
+                // Convertimos la fecha de la cita (que viene en UTC/ISO) a objeto JS
+                const fechaCita = new Date(cita.bloqueCita.fechaInicio);
                 
-                // Filtro: Solo citas de HOY
-                if (fechaCita === hoyStr) {
+                // === COMPARACIÓN ROBUSTA (DÍA, MES, AÑO) ===
+                // Esto ignora horas y textos, solo le importa el calendario local
+                const esHoy = 
+                    fechaCita.getDate() === hoy.getDate() &&
+                    fechaCita.getMonth() === hoy.getMonth() &&
+                    fechaCita.getFullYear() === hoy.getFullYear();
+
+                if (esHoy) {
                     conteo++;
-                    
-                    // Suma: Solo si tiene servicio y precio
                     if (cita.servicio && cita.servicio.precio) {
                         dinero += cita.servicio.precio;
                     }
@@ -46,17 +50,19 @@ window.actualizarDashboard = async function() {
             }
         });
 
-        // Pintar en pantalla
+        // Pintamos resultados
         lblCitas.innerText = conteo;
         
-        // Formato de moneda MXN
         const formatoPesos = new Intl.NumberFormat('es-MX', {
             style: 'currency', currency: 'MXN'
         });
         lblDinero.innerText = formatoPesos.format(dinero);
+        
+        // Log para que veas qué está pasando
+        console.log(`✅ Hoy (${hoy.toLocaleDateString()}) tienes: ${conteo} citas.`);
 
     } catch (e) {
-        console.error("❌ Error en Dashboard:", e);
+        console.error("❌ Error Dashboard:", e);
         lblCitas.innerText = "-";
         lblDinero.innerText = "$0.00";
     }

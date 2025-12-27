@@ -114,32 +114,47 @@ async function cargarMisCitas() {
         }
 
         misCitas.forEach(c => {
-            // ... (Tu renderizado de tarjeta original) ...
             const f = new Date(c.bloqueCita.fechaInicio);
-            const fecha = f.toLocaleDateString('es-MX', {weekday:'long', day:'numeric', month:'long'});
+            // Formato de fecha corto para móvil, largo para PC si quieres, o estándar
+            const fecha = f.toLocaleDateString('es-MX', {weekday:'long', day:'numeric', month:'short'});
             const hora = f.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
 
+            // CAMBIO 1: Usamos col-12 para móvil (full width) y col-lg-6 para PC
+            // CAMBIO 2: Usamos la nueva clase .card-cita
             const html = `
-                <div class="col-md-6">
-                    <div class="service-card p-4 h-100" style="cursor: default;">
-                        <div class="d-flex justify-content-between mb-3">
-                             <span class="badge bg-warning text-dark">CONFIRMADA</span>
-                             <small class="text-muted">#${c.idCita}</small>
-                        </div>
-                        <h4 class="text-white mb-1">${c.servicio.nombre}</h4>
-                        <p class="text-secondary small mb-3"><i class="bi bi-geo-alt me-1"></i> ${c.sucursal.nombre}</p>
+                <div class="col-12 col-lg-6">
+                    <div class="card-cita">
                         
-                        <div class="p-3 bg-black bg-opacity-25 rounded mb-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <i class="bi bi-person-circle fs-2 text-muted"></i>
-                                <div><small class="text-muted d-block">Barbero</small><strong>${c.empleado.persona.nombre}</strong></div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                             <span class="badge bg-warning text-dark rounded-pill badge-status">CONFIRMADA</span>
+                             <small class="text-muted font-monospace">#${c.idCita}</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h4 class="text-white fw-bold mb-1 text-uppercase">${c.servicio.nombre}</h4>
+                            <p class="text-secondary small mb-0"><i class="bi bi-geo-alt-fill text-gold me-1"></i> ${c.sucursal.nombre}</p>
+                        </div>
+                        
+                        <div class="p-3 bg-black bg-opacity-25 rounded mb-3 barber-info-box d-flex align-items-center gap-3">
+                            <div class="avatar-ring" style="width: 45px; height: 45px; border-width: 1px;">
+                                <div class="avatar-img fs-5"><i class="bi bi-person-fill"></i></div>
+                            </div>
+                            <div class="lh-1">
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">BARBERO</small>
+                                <span class="text-white fw-bold">${c.empleado.persona.nombre}</span>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-end pt-3 border-top border-secondary">
-                            <div><div class="text-white fw-bold">${hora}</div><small class="text-warning text-capitalize">${fecha}</small></div>
-                            <button class="btn btn-outline-danger btn-sm border-0" onclick="confirmarCancelacion(${c.idCita})">Cancelar</button>
+                        <div class="d-flex flex-wrap justify-content-between align-items-end pt-3 border-top border-secondary mt-auto">
+                            <div class="mb-2 mb-sm-0">
+                                <div class="text-white fs-4 fw-bold lh-1">${hora}</div>
+                                <small class="text-gold text-uppercase fw-bold" style="font-size: 0.75rem;">${fecha}</small>
+                            </div>
+                            <button class="btn btn-outline-danger btn-sm border-0 btn-mobile-full" onclick="confirmarCancelacion(${c.idCita})">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </button>
                         </div>
+
                     </div>
                 </div>`;
             div.innerHTML += html;

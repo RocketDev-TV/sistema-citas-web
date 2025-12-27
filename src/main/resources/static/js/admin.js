@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     setupToggle('togglePerfilPass', 'perfilPass', 'iconPerfilPass');
     setupToggle('togglePerfilPassConfirm', 'perfilPassConfirm', 'iconPerfilPassConfirm');
+
+    setupToggle('toggleCliPass', 'cliPass', 'iconCliPass');
 });
 
 // ==========================================
@@ -639,6 +641,168 @@ async function eliminarCita(id) {
             }
         } else {
             Swal.fire('Error', 'No se pudo eliminar la cita.', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Error', 'Fallo de conexión.', 'error');
+    }
+}
+
+// ==========================================
+//  6. GESTIÓN DE CLIENTES (ACTUALIZADO CON EDITAR)
+// ==========================================
+
+async function cargarGestionClientes() {
+    const tbody = document.getElementById('tablaClientesAdmin');
+    if(!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Cargando cartera...</td></tr>';
+
+    try {
+        const resp = await fetch(`${API_URL}/usuarios/clientes`);
+        if(!resp.ok) throw new Error("Error al obtener clientes");
+        
+        const clientes = await resp.json();
+        tbody.innerHTML = '';
+
+        if(clientes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No hay clientes registrados.</td></tr>';
+            return;
+        }
+
+        clientes.forEach(c => {
+            // Preparamos el objeto para pasarlo al modal (truco para no hacer otra petición)
+            // Convertimos a string seguro para HTML
+            const clienteString = encodeURIComponent(JSON.stringify(c));
+
+            const row = `
+                <tr>
+                    <td class="ps-4 text-muted small">#${c.idUsuario}</td>
+                    <td>
+                        <div class="fw-bold text-white">${c.persona.nombre} ${c.persona.primerApellido}</div>
+                        <small class="text-muted">ID Persona: ${c.persona.idPersona}</small>
+                    </td>
+                    <td class="text-gold font-monospace">${c.login}</td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-light me-2 border-0" onclick="prepararModalCliente('${clienteString}')" title="Editar datos">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger border-0" onclick="confirmarBanearCliente(${c.idUsuario})" title="Eliminar cuenta">
+                            <i class="bi bi-person-x-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+    } catch(e) {
+        console.error(e);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">Error de conexión.</td></tr>';
+    }
+}
+
+function confirmarBanearCliente(id) {
+    Swal.fire({
+        title: '¿Banear Cliente?',
+        text: "Se eliminará su cuenta y su historial de citas.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, banear',
+        background: '#1e1e1e', 
+        color: '#fff'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                // Endpoint estándar para borrar usuario (Asegúrate de que tu backend soporte DELETE /usuarios/{id})
+                const resp = await fetch(`${API_URL}/usuarios/${id}`, { method: 'DELETE' });
+                
+                if (resp.ok) {
+                    Swal.fire({
+                        title: 'Eliminado', 
+                        text: 'El cliente ha sido dado de baja.', 
+                        icon: 'success',
+                        background: '#1e1e1e', color: '#fff',
+                        confirmButtonColor: '#d4af37'
+                    });
+                    cargarGestionClientes(); // Recargar tabla
+                    cargarClientes(); // Recargar el select de agendar cita también
+                } else {
+                    Swal.fire('Error', 'No se pudo eliminar (Tal vez tiene citas activas).', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Fallo de conexión.', 'error');
+            }
+        }
+    });
+}
+
+// ==========================================
+//  EDITAR CLIENTE (ADMIN)
+// ==========================================
+
+function prepararModalCliente(clienteEncoded) {
+    // Decodificamos el string que mandamos desde el HTML
+    const cliente = JSON.parse(decodeURIComponent(clienteEncoded));
+    
+    // Referencias
+    const modalEl = document.getElementById('modalClienteAdmin');
+    document.getElementById('cliId').value = cliente.idUsuario;
+    document.getElementById('cliNombre').value = cliente.persona.nombre;
+    document.getElementById('cliApellido').value = cliente.persona.primerApellido;
+    document.getElementById('cliLogin').value = cliente.login;
+    document.getElementById('cliPass').value = ''; // Siempre limpia la pass
+
+    // Mostrar Modal
+    new bootstrap.Modal(modalEl).show();
+}
+
+async function guardarClienteAdmin() {
+    const id = document.getElementById('cliId').value;
+    const nombre = document.getElementById('cliNombre').value;
+    const apellido = document.getElementById('cliApellido').value;
+    const pass = document.getElementById('cliPass').value;
+    const login = document.getElementById('cliLogin').value; // Solo para enviarlo de vuelta si se requiere
+
+    if (!nombre || !apellido) return Swal.fire('Error', 'Nombre y apellido requeridos', 'warning');
+
+    // Armamos el objeto UsuarioDto
+    const payload = {
+        nombre: nombre,
+        primerApellido: apellido,
+        login: login,
+        idRol: 3, // IMPORTANTE: Mantenemos el rol de CLIENTE (3)
+        password: pass ? pass : null // Si escribió algo, lo mandamos, si no, null
+    };
+
+    try {
+        const resp = await fetch(`${API_URL}/usuarios/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+            Swal.fire({
+                title: 'Actualizado',
+                text: 'Datos del cliente modificados correctamente.',
+                icon: 'success',
+                confirmButtonColor: '#d4af37',
+                background: '#1e1e1e', color: '#fff'
+            });
+            
+            // Cerrar modal y recargar tabla
+            const modalEl = document.getElementById('modalClienteAdmin');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if(modalInstance) modalInstance.hide();
+            
+            cargarGestionClientes();
+
+        } else {
+            Swal.fire('Error', 'No se pudo actualizar.', 'error');
         }
     } catch (e) {
         console.error(e);
