@@ -22,6 +22,8 @@ public class UsuarioBs {
     private PersonaRepository personaRepository;
     @Autowired
     private Utileria utileria;
+    @Autowired
+    private EmailService emailService;
 
     // --- 1. LOGIN SEGURO---
     public Usuario validarLogin(String login, String password) {
@@ -78,6 +80,8 @@ public class UsuarioBs {
         nuevaPersona.setSegundoApellido(dto.getSegundoApellido());
         nuevaPersona.setFechaNacimiento(dto.getFechaNacimiento());
         nuevaPersona.setIdGenero(dto.getIdGenero());
+        nuevaPersona.setCorreo(dto.getCorreo());
+        
         Persona personaGuardada = personaRepository.save(nuevaPersona);
 
         // Crear Usuario
@@ -137,6 +141,32 @@ public class UsuarioBs {
         }
         
         return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void recuperarContrasena(String correo) {
+        // 1. Buscamos al usuario por su correo
+        Usuario usuario = usuarioRepository.findByPersona_Correo(correo)
+                .orElseThrow(() -> new RuntimeException("Este correo no está registrado."));
+
+        // 2. Generamos una contraseña temporal de 8 caracteres
+        String passTemporal = utileria.generarRandom(8);
+
+        // 3. Actualizamos la contraseña en la BD (Encriptada)
+        String hash = utileria.encriptar(passTemporal);
+        usuario.setPassword(hash);
+        usuarioRepository.save(usuario);
+
+        // 4. Preparamos el correo bonito
+        String asunto = "Recuperación de Contraseña - Barber King";
+        String mensaje = "Hola " + usuario.getPersona().getNombre() + ",\n\n" +
+                "Hemos recibido una solicitud para recuperar tu cuenta.\n" +
+                "Tu nueva contraseña temporal es: " + passTemporal + "\n\n" +
+                "Por favor inicia sesión y cámbiala en 'Mi Perfil' lo antes posible.\n\n" +
+                "Saludos,\nEl equipo de Barber King 💈";
+
+        // 5. Enviamos el correo (Sin encriptar, para que la lea)
+        emailService.enviarCorreo(correo, asunto, mensaje);
     }
 
     // --- AUXILIARES ---

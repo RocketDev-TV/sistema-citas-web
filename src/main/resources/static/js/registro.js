@@ -97,6 +97,35 @@ document.addEventListener('DOMContentLoaded', () => {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const passVal = passInput.value;
+            const confirmVal = confirmInput.value;
+            const correoVal = document.getElementById('correo').value;
+
+            if(passVal !== confirmVal) {
+                Swal.fire({icon: 'error', title: 'Error', text: 'Las contraseñas no coinciden.'});
+                return;
+            }
+
+            if(!correoVal) {
+                Swal.fire({icon: 'warning', title: 'Falta Correo', text: 'El correo es necesario para recuperar tu cuenta.'});
+                return;
+            }
+
+            // Validacion de formato de correo
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(correoVal)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Correo Inválido',
+                    text: 'Por favor escribe un correo real (ejemplo: usuario@gmail.com).',
+                    background: '#1e1e1e', 
+                    color: '#fff',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
             // Última validación de seguridad antes de enviar
             if(passInput.value !== confirmInput.value) {
                 Swal.fire({icon: 'error', title: 'Error', text: 'Las contraseñas no coinciden.'});
@@ -110,7 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 fechaNacimiento: document.getElementById('fechaNacimiento').value,
                 idGenero: parseInt(document.getElementById('idGenero').value),
                 login: document.getElementById('login').value,
-                password: passInput.value // Mandamos la contraseña validada
+                password: passInput.value,
+                correo: correoVal,
+                login: document.getElementById('login').value
             };
 
             const textoOriginal = btnSubmit.innerText;

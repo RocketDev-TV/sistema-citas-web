@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -53,6 +55,19 @@ public class UsuarioController {
     public List<Usuario> listarSoloClientes() {
         // OPCIÓN RÁPIDA (Modifica tu UsuarioBs para tener este método):
         return usuarioBs.listarPorRol(3); 
+    }
+
+    @PostMapping("/recuperar")
+    public ResponseEntity<?> recuperar(@RequestBody Map<String, String> body) {
+        String correo = body.get("correo");
+        try {
+            usuarioBs.recuperarContrasena(correo);
+            // Respondemos éxito genérico por seguridad
+            return ResponseEntity.ok(Collections.singletonMap("mensaje", "Si el correo existe, se enviaron las instrucciones."));
+        } catch (RuntimeException e) {
+            // Si quieres ser específico con el error (ej: "Correo no existe")
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
     }
 }
 

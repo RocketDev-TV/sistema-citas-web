@@ -19,7 +19,7 @@ if (usuarioGuardado) {
 const form = document.getElementById('loginForm');
 const alertError = document.getElementById('alertError');
 
-// LÓGICA DEL OJITO 👁️
+// LÓGICA DEL OJO
 const togglePassword = document.getElementById('togglePassword');
 const passwordInput = document.getElementById('password');
 const iconEye = document.getElementById('iconEye');
@@ -81,6 +81,80 @@ if (form) {
             btn.disabled = false;
         }
     });
+}
+
+// ==========================================
+//  RECUPERACIÓN DE CONTRASEÑA
+// ==========================================
+async function pedirCorreoRecuperacion() {
+    // 1. Pedimos el correo con un SweetAlert bonito
+    const { value: correo } = await Swal.fire({
+        title: 'Recuperar Cuenta',
+        text: 'Ingresa tu correo electrónico registrado. Te enviaremos una contraseña temporal.',
+        input: 'email',
+        inputPlaceholder: 'ejemplo@gmail.com',
+        showCancelButton: true,
+        confirmButtonText: 'Enviar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#d4af37', // Gold
+        background: '#1e1e1e',
+        color: '#fff',
+        inputAttributes: {
+            autocapitalize: 'off',
+            autocorrect: 'off'
+        },
+        customClass: {
+            input: 'bg-dark text-white border-secondary' // Para que el input combine
+        }
+    });
+
+    // 2. Si el usuario escribió algo y le dio "Enviar"
+    if (correo) {
+        Swal.fire({
+            title: 'Enviando...',
+            text: 'Estamos contactando al servidor de correos.',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading() },
+            background: '#1e1e1e', color: '#fff'
+        });
+
+        try {
+            // 3. Llamamos a tu Backend
+            const resp = await fetch('/api/usuarios/recuperar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo: correo })
+            });
+
+            const data = await resp.json();
+
+            if (resp.ok) {
+                Swal.fire({
+                    title: '¡Correo Enviado!',
+                    text: 'Revisa tu bandeja de entrada (y spam).',
+                    icon: 'success',
+                    confirmButtonColor: '#d4af37',
+                    background: '#1e1e1e', color: '#fff'
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.error || 'No pudimos procesar la solicitud.',
+                    icon: 'error',
+                    background: '#1e1e1e', color: '#fff'
+                });
+            }
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                title: 'Error de Red',
+                text: 'No pudimos conectar con el servidor.',
+                icon: 'error',
+                background: '#1e1e1e', color: '#fff'
+            });
+        }
+    }
 }
 
 function mostrarError(msg) {

@@ -29,4 +29,7 @@ public class Persona {
     // Mapeamos el género directo como ID para no crear otra clase ahorita
     @Column(name = "fk_id_genero")
     private Integer idGenero; 
+
+    @Column(name = "tx_correo")
+    private String correo;
 }

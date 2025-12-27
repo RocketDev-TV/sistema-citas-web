@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.actualizarDashboard = async function() {
-    console.log("📊 Revisando agenda del día...");
+    console.log("Revisando agenda del día...");
     
     const lblCitas = document.getElementById('lblCitasHoy');
     const lblDinero = document.getElementById('lblDineroHoy');
@@ -59,10 +59,10 @@ window.actualizarDashboard = async function() {
         lblDinero.innerText = formatoPesos.format(dinero);
         
         // Log para que veas qué está pasando
-        console.log(`✅ Hoy (${hoy.toLocaleDateString()}) tienes: ${conteo} citas.`);
+        console.log(`Hoy (${hoy.toLocaleDateString()}) tienes: ${conteo} citas.`);
 
     } catch (e) {
-        console.error("❌ Error Dashboard:", e);
+        console.error("Error Dashboard:", e);
         lblCitas.innerText = "-";
         lblDinero.innerText = "$0.00";
     }

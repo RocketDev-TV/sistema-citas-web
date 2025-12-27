@@ -15,4 +15,7 @@ public class RegistroClienteDto {
     // Datos de Cuenta
     private String login;
     private String password;
+
+    // Correo
+    private String correo;
 }

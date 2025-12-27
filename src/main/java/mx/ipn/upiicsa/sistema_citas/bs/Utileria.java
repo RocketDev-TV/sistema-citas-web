@@ -26,4 +26,15 @@ public class Utileria {
             throw new RuntimeException("Error al encriptar: " + e.getMessage());
         }
     }
+
+    // Poner esto en Utileria.java si no lo tienes
+    public String generarRandom(int longitud) {
+        String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder sb = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for(int i = 0; i < longitud; i++) {
+            sb.append(caracteres.charAt(random.nextInt(caracteres.length())));
+        }
+        return sb.toString();
+    }
 }

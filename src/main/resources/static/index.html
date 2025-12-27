@@ -53,13 +53,19 @@
                                         </div>
 
                                         <div class="mb-5">
-                                            <label class="form-label ps-2">CONTRASEÑA</label>
+                                            <label for="password" class="form-label text-gold">Contraseña</label>
                                             <div class="input-group">
-                                                <input type="password" id="password"
-                                                    class="form-control form-control-lg" placeholder="••••••" required>
-                                                <button class="btn btn-eye px-3" type="button" id="togglePassword">
-                                                    <i class="bi bi-eye-slash" id="iconEye"></i>
+                                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-key"></i></span>
+                                                <input type="password" class="form-control bg-dark text-white border-secondary" id="password" placeholder="••••••••" required>
+                                                <button class="btn btn-outline-secondary border-secondary" type="button" id="togglePassword">
+                                                    <i class="bi bi-eye" id="iconEye"></i>
                                                 </button>
+                                            </div>
+                                            
+                                            <div class="text-end mt-2">
+                                                <a href="#" onclick="pedirCorreoRecuperacion()" class="text-secondary small text-decoration-none hover-gold">
+                                                    ¿Olvidaste tu contraseña?
+                                                </a>
                                             </div>
                                         </div>
 
