@@ -45,6 +45,8 @@ public class UsuarioController {
             dto.getIdUsuario(), 
             dto.getPersona().getNombre(), 
             dto.getPersona().getPrimerApellido(), 
+            dto.getPersona().getSegundoApellido(),
+            dto.getPersona().getFechaNacimiento(),
             dto.getPassword()
         );
         return ResponseEntity.ok(u);
@@ -69,6 +71,21 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/verificar")
+    public ResponseEntity<?> verificar(@RequestBody Map<String, String> body) {
+        String login = body.get("login");
+        String codigo = body.get("codigo");
+        
+        try {
+            usuarioBs.verificarCuenta(login, codigo);
+            // Si no hay error, respondemos éxito
+            return ResponseEntity.ok(Collections.singletonMap("mensaje", "¡Cuenta verificada! Ya puedes iniciar sesión."));
+        } catch (RuntimeException e) {
+            // Si el código está mal o expiró
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
 }
 
 class ActualizarPerfilDto {
@@ -76,6 +93,7 @@ class ActualizarPerfilDto {
     private PersonaDto persona;
     private String password;
 
+    // Getters y Setters
     public Integer getIdUsuario() { return idUsuario; }
     public void setIdUsuario(Integer idUsuario) { this.idUsuario = idUsuario; }
     public PersonaDto getPersona() { return persona; }
@@ -87,9 +105,18 @@ class ActualizarPerfilDto {
 class PersonaDto {
     private String nombre;
     private String primerApellido;
+    private String segundoApellido;
+    private java.time.LocalDate fechaNacimiento;
 
+    // Getters y Setters
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
     public String getPrimerApellido() { return primerApellido; }
     public void setPrimerApellido(String primerApellido) { this.primerApellido = primerApellido; }
+    
+    public String getSegundoApellido() { return segundoApellido; }
+    public void setSegundoApellido(String segundoApellido) { this.segundoApellido = segundoApellido; }
+    
+    public java.time.LocalDate getFechaNacimiento() { return fechaNacimiento; }
+    public void setFechaNacimiento(java.time.LocalDate fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
 }

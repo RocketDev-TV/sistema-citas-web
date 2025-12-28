@@ -1,7 +1,7 @@
 package mx.ipn.upiicsa.sistema_citas.dto;
 
 import lombok.Data;
-//import java.time.LocalDate;
+import java.time.LocalDate;
 
 @Data
 public class AltaEmpleadoDto {
@@ -9,6 +9,7 @@ public class AltaEmpleadoDto {
     private String nombre;
     private String primerApellido;
     private String segundoApellido;
+    private LocalDate fechaNacimiento;
     
     // Datos Laborales
     private Integer idSucursal;

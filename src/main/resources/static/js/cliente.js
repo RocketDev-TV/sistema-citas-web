@@ -24,18 +24,31 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarMisCitas();
     cargarCatalogos();
     
-    // SETUP OJITOS PERFIL 👁️
+    // SETUP OJITOS PERFIL
     setupToggle('togglePerfilPass', 'perfilPass', 'iconPerfilPass');
     setupToggle('togglePerfilPassConfirm', 'perfilPassConfirm', 'iconPerfilPassConfirm');
 });
 
 // ==========================================
-//  MI PERFIL (LÓGICA CLIENTE)
+//  MI PERFIL (LÓGICA CLIENTE - ACTUALIZADA)
 // ==========================================
 function abrirMiPerfil() {
     document.getElementById('perfilNombreDisplay').textContent = currentUser.persona.nombre;
+    
+    // Llenar campos
     document.getElementById('perfilNombre').value = currentUser.persona.nombre;
-    document.getElementById('perfilApellido').value = currentUser.persona.primerApellido;
+    document.getElementById('perfilPrimerApellido').value = currentUser.persona.primerApellido; // Ojo: ID actualizado
+    document.getElementById('perfilSegundoApellido').value = currentUser.persona.segundoApellido || '';
+    
+    // Fecha
+    if(currentUser.persona.fechaNacimiento) {
+        // Formato YYYY-MM-DD para el input date
+        document.getElementById('perfilFechaNacimiento').value = currentUser.persona.fechaNacimiento.toString().split('T')[0];
+    } else {
+        document.getElementById('perfilFechaNacimiento').value = '';
+    }
+
+    // Limpiar passwords
     document.getElementById('perfilPass').value = '';
     document.getElementById('perfilPassConfirm').value = '';
     
@@ -44,22 +57,30 @@ function abrirMiPerfil() {
 
 async function actualizarMiPerfil() {
     const nombre = document.getElementById('perfilNombre').value;
-    const apellido = document.getElementById('perfilApellido').value;
+    const primerApellido = document.getElementById('perfilPrimerApellido').value;
+    const segundoApellido = document.getElementById('perfilSegundoApellido').value;
+    const fecha = document.getElementById('perfilFechaNacimiento').value;
+    
     const pass = document.getElementById('perfilPass').value;
     const passConfirm = document.getElementById('perfilPassConfirm').value;
 
-    if (!nombre || !apellido) return Swal.fire('Error', 'Nombre requerido', 'warning');
+    if (!nombre || !primerApellido) return Swal.fire('Error', 'Nombre y primer apellido requeridos', 'warning');
     if (pass && pass !== passConfirm) return Swal.fire('Error', 'Contraseñas no coinciden', 'error');
 
+    // Armamos el payload con la estructura nueva
     const payload = {
-        nombre: nombre,
-        primerApellido: apellido,
-        idRol: 3, // IMPORTANTE: Mantenemos rol CLIENTE (3)
+        idUsuario: currentUser.idUsuario, // Importante mandarlo para el Controller
+        persona: {
+            nombre: nombre,
+            primerApellido: primerApellido,
+            segundoApellido: segundoApellido,
+            fechaNacimiento: fecha
+        },
         password: pass ? pass : null
     };
 
     try {
-        const resp = await fetch(`${API_URL}/usuarios/${currentUser.idUsuario}`, {
+        const resp = await fetch(`${API_URL}/usuarios/perfil`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
@@ -67,8 +88,10 @@ async function actualizarMiPerfil() {
 
         if (resp.ok) {
             const userActualizado = await resp.json();
-            // Mantenemos el login original si el backend no lo devuelve (a veces pasa)
+            
+            // Parche por si el backend no regresa el login o rol
             if(!userActualizado.login) userActualizado.login = currentUser.login;
+            if(!userActualizado.idRol) userActualizado.idRol = currentUser.idRol;
             
             localStorage.setItem('usuario', JSON.stringify(userActualizado));
             currentUser = userActualizado;

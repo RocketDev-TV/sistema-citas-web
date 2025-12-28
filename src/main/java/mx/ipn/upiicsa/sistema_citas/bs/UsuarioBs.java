@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 @Service
 public class UsuarioBs {
@@ -137,13 +138,15 @@ public class UsuarioBs {
     
     // --- 5. ACTUALIZAR PERFIL (Método específico para "Mi Perfil") ---
     @Transactional
-    public Usuario actualizarPerfilCompleto(Integer idUsuario, String nombre, String apellido, String password) {
+    public Usuario actualizarPerfilCompleto(Integer idUsuario, String nombre, String primerApellido, String segundoApellido, LocalDate fechaNacimiento, String password) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
         usuario.getPersona().setNombre(nombre);
-        usuario.getPersona().setPrimerApellido(apellido);
-        
+        usuario.getPersona().setPrimerApellido(primerApellido);
+        usuario.getPersona().setSegundoApellido(segundoApellido);
+        usuario.getPersona().setFechaNacimiento(fechaNacimiento);
+
         if (password != null && !password.isEmpty()) {
             // Encriptamos
             String nuevoHash = utileria.encriptar(password);

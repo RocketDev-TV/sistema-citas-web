@@ -21,9 +21,11 @@ public class EmpleadoBs {
     private SucursalRepository sucursalRepository;
     @Autowired
     private UsuarioRepository usuarioRepository; 
+    
+    @Autowired
+    private Utileria utileria; 
 
     // --- MÉTODO 1: CONTRATAR (Viejito - Solo vincula) ---
-    // Este faltaba y por eso te daba error en la línea 27 del Controller
     public Empleado contratar(EmpleadoDto dto) {
         Persona persona = personaRepository.findById(dto.getIdPersona())
                 .orElseThrow(() -> new RuntimeException("¡Esa persona no existe!"));
@@ -55,8 +57,10 @@ public class EmpleadoBs {
         persona.setNombre(dto.getNombre());
         persona.setPrimerApellido(dto.getPrimerApellido());
         persona.setSegundoApellido(dto.getSegundoApellido());
-        persona.setFechaNacimiento(java.time.LocalDate.now()); 
-        persona.setIdGenero(1); 
+        
+        persona.setFechaNacimiento(dto.getFechaNacimiento()); 
+        
+        persona.setIdGenero(1); // Default o pásalo en el DTO si quieres
         
         persona = personaRepository.save(persona);
 
@@ -64,7 +68,10 @@ public class EmpleadoBs {
         Usuario usuario = new Usuario();
         usuario.setPersona(persona);
         usuario.setLogin(dto.getLogin());
-        usuario.setPassword(dto.getPassword());
+
+        String hash = utileria.encriptar(dto.getPassword());
+        usuario.setPassword(hash);
+        
         usuario.setIdRol(2); 
         usuario.setActivo(true);
         

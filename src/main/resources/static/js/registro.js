@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const datos = {
                 nombre: document.getElementById('nombre').value,
                 primerApellido: document.getElementById('primerApellido').value,
-                segundoApellido: null,
+                segundoApellido: document.getElementById('segundoApellido').value,
                 fechaNacimiento: document.getElementById('fechaNacimiento').value,
                 idGenero: parseInt(document.getElementById('idGenero').value),
                 login: document.getElementById('login').value,
@@ -156,15 +156,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (respuesta.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Bienvenido!',
-                        text: 'Tu cuenta ha sido creada. Inicia sesión.',
-                        confirmButtonColor: '#cda45e',
+                    // Ocultamos el loading del botón
+                    btnSubmit.innerText = textoOriginal;
+                    
+                    // 1. Se envia el correo
+                    await Swal.fire({
+                        icon: 'info',
+                        title: 'Verifica tu cuenta',
+                        text: 'Hemos enviado un código de 6 dígitos a tu correo. Ingrésalo para continuar.',
+                        confirmButtonText: 'Ingresar Código',
+                        allowOutsideClick: false,
                         background: '#1e1e1e', color: '#fff'
-                    }).then(() => {
-                        window.location.href = 'index.html'; 
                     });
+
+                    // 2. Pedir el codigo en loop
+                    let verificado = false;
+                    while (!verificado) {
+                        const { value: codigo } = await Swal.fire({
+                            title: 'Código de Verificación',
+                            input: 'text',
+                            inputPlaceholder: 'Ej. 8X29A1',
+                            inputAttributes: { maxlength: 6, autocapitalize: 'characters' },
+                            showCancelButton: false,
+                            confirmButtonText: 'Verificar',
+                            confirmButtonColor: '#d4af37',
+                            background: '#1e1e1e', color: '#fff',
+                            customClass: { input: 'bg-dark text-white border-secondary text-center fw-bold fs-4' }
+                        });
+
+                        if (!codigo) continue; // Si no escribe nada, repetimos
+
+                        // 3. Validamos
+                        try {
+                            const respVerif = await fetch('/api/usuarios/verificar', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                    login: document.getElementById('login').value,
+                                    codigo: codigo 
+                                })
+                            });
+
+                            if (respVerif.ok) {
+                                verificado = true;
+                                await Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Cuenta Activada!',
+                                    text: 'Bienvenido a Barber King.',
+                                    confirmButtonColor: '#d4af37',
+                                    background: '#1e1e1e', color: '#fff'
+                                });
+                                window.location.href = 'index.html'; // lo mandamos al login
+                            } else {
+                                const err = await respVerif.json();
+                                await Swal.fire({
+                                    icon: 'error',
+                                    title: 'Código Incorrecto',
+                                    text: err.error || 'Inténtalo de nuevo.',
+                                    background: '#1e1e1e', color: '#fff'
+                                });
+                            }
+                        } catch (e) {
+                            console.error(e);
+                            break; // Error de red, rompemos el loop
+                        }
+                    }
                 } else {
                     const error = await respuesta.json();
                     Swal.fire({
