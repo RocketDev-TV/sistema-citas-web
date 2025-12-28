@@ -34,4 +34,7 @@ public class Usuario {
     // Mapeamos solo el ID para rápido, o puedes hacer la entidad Rol si quieres
     @Column(name = "fk_id_rol")
     private Integer idRol;
+
+    @Column(name = "tx_token_verificacion")
+    private String tokenVerificacion;
 }

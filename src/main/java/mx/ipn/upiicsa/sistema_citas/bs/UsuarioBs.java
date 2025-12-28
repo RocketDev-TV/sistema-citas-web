@@ -73,7 +73,7 @@ public class UsuarioBs {
             throw new RuntimeException("¡Ese usuario ya está ocupado!");
         }
 
-        // Crear Persona
+        // 1. Crear Persona (Igual que antes)
         Persona nuevaPersona = new Persona();
         nuevaPersona.setNombre(dto.getNombre());
         nuevaPersona.setPrimerApellido(dto.getPrimerApellido());
@@ -81,22 +81,32 @@ public class UsuarioBs {
         nuevaPersona.setFechaNacimiento(dto.getFechaNacimiento());
         nuevaPersona.setIdGenero(dto.getIdGenero());
         nuevaPersona.setCorreo(dto.getCorreo());
-        
         Persona personaGuardada = personaRepository.save(nuevaPersona);
 
-        // Crear Usuario
+        // 2. Crear Usuario
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setPersona(personaGuardada);
         nuevoUsuario.setLogin(dto.getLogin());
-        
-        // Encriptamos
         String hash = utileria.encriptar(dto.getPassword());
         nuevoUsuario.setPassword(hash);
-        
-        nuevoUsuario.setActivo(true);
-        nuevoUsuario.setIdRol(3); // Rol 3 = Cliente
+        nuevoUsuario.setIdRol(3);
 
-        return usuarioRepository.save(nuevoUsuario);
+        nuevoUsuario.setActivo(false); 
+
+        String codigo = utileria.generarRandom(6); // Usamos tu función random
+        nuevoUsuario.setTokenVerificacion(codigo);
+        
+        Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
+
+        String asunto = "Verifica tu cuenta - Barber King";
+        String mensaje = "¡Bienvenido " + dto.getNombre() + "!\n\n" +
+                "Tu cuenta ha sido creada, pero necesitas activarla.\n" +
+                "Tu código de verificación es: " + codigo + "\n\n" +
+                "Ingrésalo en la página para comenzar a agendar citas.";
+        
+        emailService.enviarCorreo(dto.getCorreo(), asunto, mensaje);
+
+        return usuarioGuardado;
     }
 
     // --- 4. ACTUALIZAR (Para Admin/Staff y Perfil) ---
@@ -167,6 +177,28 @@ public class UsuarioBs {
 
         // 5. Enviamos el correo (Sin encriptar, para que la lea)
         emailService.enviarCorreo(correo, asunto, mensaje);
+    }
+
+    // --- 6. VERIFICAR CUENTA (NUEVO) ---
+    @Transactional
+    public void verificarCuenta(String login, String codigo) {
+        // Buscamos al usuario por su Login
+        Usuario usuario = usuarioRepository.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+
+        // Validamos si ya está activo
+        if (usuario.getActivo()) {
+            throw new RuntimeException("¡Esta cuenta ya está activa! Inicia sesión.");
+        }
+
+        // Validamos el código (Cuidamos que no sea null)
+        if (usuario.getTokenVerificacion() == null || !usuario.getTokenVerificacion().equals(codigo)) {
+            throw new RuntimeException("Código incorrecto. Verifica tu correo.");
+        }
+
+        usuario.setActivo(true);
+        usuario.setTokenVerificacion(null); // Limpiamos el token para que no se use 2 veces
+        usuarioRepository.save(usuario);
     }
 
     // --- AUXILIARES ---
