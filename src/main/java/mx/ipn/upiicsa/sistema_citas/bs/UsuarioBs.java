@@ -1,6 +1,7 @@
 package mx.ipn.upiicsa.sistema_citas.bs;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import mx.ipn.upiicsa.sistema_citas.dao.PersonaRepository;
 import mx.ipn.upiicsa.sistema_citas.dao.UsuarioRepository;
 import mx.ipn.upiicsa.sistema_citas.dto.RegistroClienteDto;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class UsuarioBs {
@@ -27,23 +30,61 @@ public class UsuarioBs {
     private EmailService emailService;
 
     // --- 1. LOGIN SEGURO---
+    @Transactional(noRollbackFor = RuntimeException.class)
     public Usuario validarLogin(String login, String password) {
-        // 1. Generamos el hash
-        String passHash = utileria.encriptar(password);
-        
-        // 2. Buscamos en la BD por login y hash exacto
-        Optional<Usuario> op = usuarioRepository.findByLoginAndPassword(login, passHash);
-        
-        // 3. Validamos que exista y esté activo
-        if (op.isPresent() && op.get().getActivo()) {
-            return op.get();
+        // Buscar el usuario
+        Usuario usuario = usuarioRepository.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Credenciales incorrectas."));
+
+        // Validar bloqueo
+        if (usuario.getFechaDesbloqueo() != null) {
+            if (LocalDateTime.now().isBefore(usuario.getFechaDesbloqueo())) {
+                // Calculamos cuanto falta
+                long segundosRestantes = ChronoUnit.SECONDS.between(LocalDateTime.now(), usuario.getFechaDesbloqueo());
+                throw new RuntimeException("Cuenta bloqueada temporalmente. Intenta en " + segundosRestantes + " segundos.");
+            } else {
+                usuario.setFechaDesbloqueo(null);
+            }
         }
-        
-        // Si no coincide o está inactivo, lanzamos error genérico
-        throw new RuntimeException("Usuario o contraseña incorrectos");
+
+        String hashInput = utileria.encriptar(password);
+
+        if (!usuario.getPassword().equals(hashInput)) {
+
+            int intentosActuales = (usuario.getIntentos() == null ? 0 : usuario.getIntentos()) + 1;
+            usuario.setIntentos(intentosActuales);
+            
+            String mensajeError = "Contraseña incorrecta.";
+
+            if (intentosActuales >= 3) {
+                int segundosCastigo = 30;
+                
+                if (intentosActuales > 3) {
+                    segundosCastigo = 60;
+                }
+
+                usuario.setFechaDesbloqueo(LocalDateTime.now().plusSeconds(segundosCastigo));
+                mensajeError = "¡Demasiados intentos! Cuenta bloqueada por " + segundosCastigo + " segundos.";
+            } else {
+                int restantes = 3 - intentosActuales;
+                mensajeError += " Te quedan " + restantes + " intentos.";
+            }
+
+            usuarioRepository.save(usuario); // Guardamos el fallo en BD
+            throw new RuntimeException(mensajeError);
+        }
+
+        if (!usuario.getActivo()) {
+            throw new RuntimeException("Tu cuenta no ha sido activada. Revisa tu correo.");
+        }
+
+        usuario.setIntentos(0);
+        usuario.setFechaDesbloqueo(null);
+        usuarioRepository.save(usuario);
+
+        return usuario;
     }
 
-    // --- 2. REGISTRAR ADMIN/STAFF (Desde el Panel) ---
     @Transactional
     public Usuario registrar(UsuarioDto dto) {
         Persona persona = personaRepository.findById(dto.getIdPersona())

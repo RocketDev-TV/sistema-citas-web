@@ -21,8 +21,13 @@ public class UsuarioController {
 
     // 1. LOGIN
     @PostMapping("/login")
-    public Usuario login(@RequestBody LoginDto dto) {
-        return usuarioBs.validarLogin(dto.getLogin(), dto.getPassword());
+    public ResponseEntity<?> login(@RequestBody LoginDto dto) {
+        try {
+            Usuario usuario = usuarioBs.validarLogin(dto.getLogin(), dto.getPassword());
+            return ResponseEntity.ok(usuario);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
     }
 
     // 2. REGISTRO CLIENTE NUEVO

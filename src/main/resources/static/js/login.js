@@ -34,7 +34,6 @@ if (togglePassword) {
     });
 }
 
-// LÓGICA DE SUBMIT
 if (form) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault(); 
@@ -57,20 +56,20 @@ if (form) {
                 body: JSON.stringify(datos)
             });
 
+            const data = await respuesta.json();
+
             if (respuesta.ok) {
-                const usuario = await respuesta.json();
-                
                 // GUARDAR SESIÓN
-                localStorage.setItem('usuario', JSON.stringify(usuario));
+                localStorage.setItem('usuario', JSON.stringify(data));
                 
                 // REDIRECCIÓN SEGÚN ROL
-                if (usuario.idRol === 1 || usuario.idRol === 2) {
+                if (data.idRol === 1 || data.idRol === 2) {
                     window.location.href = 'admin.html';
                 } else {
                     window.location.href = 'cliente.html';
                 }
             } else {
-                mostrarError("Credenciales incorrectas.");
+                mostrarError(data.error || "Credenciales incorrectas.");
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
             }
@@ -81,6 +80,11 @@ if (form) {
             btn.disabled = false;
         }
     });
+}
+
+function mostrarError(msg) {
+    alertError.textContent = msg;
+    alertError.classList.remove('d-none');
 }
 
 // ==========================================
@@ -155,9 +159,4 @@ async function pedirCorreoRecuperacion() {
             });
         }
     }
-}
-
-function mostrarError(msg) {
-    alertError.textContent = msg;
-    alertError.classList.remove('d-none');
 }

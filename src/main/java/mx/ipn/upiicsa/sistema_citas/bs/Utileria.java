@@ -27,7 +27,6 @@ public class Utileria {
         }
     }
 
-    // Poner esto en Utileria.java si no lo tienes
     public String generarRandom(int longitud) {
         String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder sb = new StringBuilder();

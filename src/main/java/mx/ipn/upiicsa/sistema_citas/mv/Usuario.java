@@ -1,5 +1,7 @@
 package mx.ipn.upiicsa.sistema_citas.mv;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -20,7 +22,7 @@ public class Usuario {
     private Persona persona;
 
     @Column(name = "tx_login")
-    private String login; // El "usuario" o "email"
+    private String login;
 
     @Column(name = "tx_password")
     // Ocultamos el password para que nunca salga en el JSON al consultar
@@ -30,11 +32,16 @@ public class Usuario {
     @Column(name = "st_activo")
     private Boolean activo;
 
-    // Relación con Rol (Admin, Cliente, etc.)
-    // Mapeamos solo el ID para rápido, o puedes hacer la entidad Rol si quieres
     @Column(name = "fk_id_rol")
     private Integer idRol;
 
     @Column(name = "tx_token_verificacion")
     private String tokenVerificacion;
+
+    @Column(name = "nu_intentos")
+    private Integer intentos;
+
+    @Column(name = "fh_desbloqueo")
+    private LocalDateTime fechaDesbloqueo;
+
 }
