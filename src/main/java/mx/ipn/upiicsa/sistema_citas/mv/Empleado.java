@@ -1,5 +1,7 @@
 package mx.ipn.upiicsa.sistema_citas.mv;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,4 +25,12 @@ public class Empleado {
 
     @Column(name = "st_activo")
     private Integer stActivo;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "tce06_empleado_horario", // Nombre de la tabla intermedia
+        joinColumns = @JoinColumn(name = "fk_id_persona"), // Tu ID de empleado/persona
+        inverseJoinColumns = @JoinColumn(name = "fk_id_horario") // El ID del horario
+    )
+    private List<Horario> horariosAsignados;
 }
