@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class EmpleadoDto {
-    private Integer idPersona;  // ¿Quién es?
-    private Integer idSucursal; // ¿Dónde trabaja?
+    private Integer idPersona;
+    private Integer idSucursal; 
 }

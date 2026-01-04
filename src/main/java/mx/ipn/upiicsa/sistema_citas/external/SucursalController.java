@@ -3,10 +3,8 @@ package mx.ipn.upiicsa.sistema_citas.external;
 import mx.ipn.upiicsa.sistema_citas.bs.SucursalBs;
 import mx.ipn.upiicsa.sistema_citas.dto.SucursalDto;
 import mx.ipn.upiicsa.sistema_citas.mv.Sucursal;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,20 +21,23 @@ public class SucursalController {
         return sucursalBs.listarTodas();
     }
 
+    // CREAR
     @PostMapping
-    public Sucursal guardar(@RequestBody SucursalDto dto) {
-        // 1. Convertimos el DTO a la Entidad
-        Sucursal sucursal = new Sucursal();
-        sucursal.setNombre(dto.getNombre());
-        sucursal.setIdEstablecimiento(dto.getIdEstablecimiento());
+    public ResponseEntity<Sucursal> guardar(@RequestBody SucursalDto dto) {
+        return ResponseEntity.ok(sucursalBs.guardar(dto));
+    }
 
-        // 2. Convertir lat/lon a Point de PostGIS
-        if (dto.getLatitud() != null && dto.getLongitud() != null) {
-            GeometryFactory factory = new GeometryFactory();
-            Point punto = factory.createPoint(new Coordinate(dto.getLongitud(), dto.getLatitud()));
-            sucursal.setUbicacion(punto);
-        }
+    // EDITAR (¡Este faltaba!)
+    @PutMapping("/{id}")
+    public ResponseEntity<Sucursal> editar(@PathVariable Integer id, @RequestBody SucursalDto dto) {
+        dto.setIdSucursal(id); // Forzamos el ID de la URL
+        return ResponseEntity.ok(sucursalBs.guardar(dto));
+    }
 
-        return sucursalBs.registrar(sucursal);
+    // ACTIVAR/DESACTIVAR (¡Este también!)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> alternarEstado(@PathVariable Integer id) {
+        sucursalBs.cambiarEstado(id);
+        return ResponseEntity.ok().build();
     }
 }

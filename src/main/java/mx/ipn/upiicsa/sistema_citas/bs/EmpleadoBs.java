@@ -23,7 +23,7 @@ public class EmpleadoBs {
     private UsuarioRepository usuarioRepository; 
     
     @Autowired
-    private Utileria utileria; 
+    private Utileria utileria;
 
     // --- MÉTODO 1: CONTRATAR (Viejito - Solo vincula) ---
     public Empleado contratar(EmpleadoDto dto) {
@@ -57,35 +57,37 @@ public class EmpleadoBs {
         persona.setNombre(dto.getNombre());
         persona.setPrimerApellido(dto.getPrimerApellido());
         persona.setSegundoApellido(dto.getSegundoApellido());
-        
-        persona.setFechaNacimiento(dto.getFechaNacimiento()); 
-        
-        persona.setIdGenero(1); // Default o pásalo en el DTO si quieres
-        
+        persona.setFechaNacimiento(dto.getFechaNacimiento());
+        persona.setIdGenero(1);
         persona = personaRepository.save(persona);
 
-        // 4. Crear Usuario (Rol 2 = Empleado/Staff)
+        // 4. Crear Usuario
         Usuario usuario = new Usuario();
         usuario.setPersona(persona);
         usuario.setLogin(dto.getLogin());
-
-        String hash = utileria.encriptar(dto.getPassword());
-        usuario.setPassword(hash);
-        
-        usuario.setIdRol(2); 
+        usuario.setPassword(utileria.encriptar(dto.getPassword()));
+        usuario.setIdRol(2);
         usuario.setActivo(true);
-        
         usuarioRepository.save(usuario);
 
-        // 5. Crear Empleado (Vincular a Sucursal)
+        // 5. Crear Empleado 
         Empleado empleado = new Empleado();
         empleado.setPersona(persona);
-        empleado.setSucursal(sucursal);
+
+        empleado.setSucursal(sucursal); 
 
         return empleadoRepository.save(empleado);
     }
 
     public List<Empleado> listarTodos() {
-        return empleadoRepository.findAll();
+        return empleadoRepository.findByStActivo(1); 
+    }
+
+    public void darDeBajaEmpleado(Integer id) {
+        Empleado emp = empleadoRepository.findById(id).orElse(null);
+        if (emp != null) {
+            emp.setStActivo(0);
+            empleadoRepository.save(emp);
+        }
     }
 }

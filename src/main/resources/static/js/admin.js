@@ -20,9 +20,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Staff Security
     if (currentUser.idRol === 2) {
-        const tab = document.getElementById('pills-equipo-tab');
-        if(tab) tab.remove();
+        const tabsProhibidas = [
+            'pills-equipo-tab',
+            'pills-servicios-tab',
+            'pills-sucursales-tab',
+            'pills-clientes-tab'
+        ];
+
+        tabsProhibidas.forEach(id => {
+            const tab = document.getElementById(id);
+            if(tab) tab.remove();
+        });
     }
+
     cargarClientes();
     cargarCitas();
     cargarCatalogos(); 
@@ -37,8 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setupToggle('toggleCliPass', 'cliPass', 'iconCliPass');
 });
 
+
 // ==========================================
-//  CATÁLOGOS 
+//  CATÁLOGOS
 // ==========================================
 async function cargarCatalogos() {
     try {
@@ -50,11 +61,11 @@ async function cargarCatalogos() {
         if(container) {
             container.innerHTML = '';
             serviciosActivos.forEach(serv => {
-                let precioReal = serv.precio ? serv.precio : 0;
-                let desc = serv.descripcion || "Servicio profesional.";
-                const col = document.createElement('div');
-                col.className = 'col-md-6'; 
-                col.innerHTML = `
+                 let precioReal = serv.precio ? serv.precio : 0;
+                 let desc = serv.descripcion || "Servicio profesional.";
+                 const col = document.createElement('div');
+                 col.className = 'col-md-6';
+                 col.innerHTML = `
                     <div class="service-card" onclick="seleccionarServicio(this, ${serv.idServicio}, ${serv.duracion}, ${precioReal})">
                         <i class="bi bi-scissors service-icon-bg"></i>
                         <div class="service-header">
@@ -66,15 +77,18 @@ async function cargarCatalogos() {
                             <small style="font-size: 0.7rem; opacity: 0.6;">⏱ ${serv.duracion} min</small>
                         </div>
                     </div>
-                `;
-                container.appendChild(col);
+                 `;
+                 container.appendChild(col);
             });
         }
 
         const respSuc = await fetch(`${API_URL}/sucursales`);
         const sucursales = await respSuc.json();
+
         llenarSelect('selectSucursal', sucursales, 'idSucursal', 'nombre');
         
+        llenarSelect('empSucursal', sucursales, 'idSucursal', 'nombre');
+
         const respEmp = await fetch(`${API_URL}/empleados`);
         const empleados = await respEmp.json();
         llenarSelect('selectEmpleado', empleados, 'idEmpleado', 'persona.nombre');
@@ -208,7 +222,7 @@ async function actualizarMiPerfil() {
 }
 
 // ==========================================
-//  EMPLEADOS (ACTUALIZADO)
+//  EMPLEADOS
 // ==========================================
 async function cargarEmpleados() {
     const contenedor = document.getElementById('listaEmpleados');
@@ -224,9 +238,16 @@ async function cargarEmpleados() {
                         <div class="avatar-ring mb-3"><div class="avatar-img"><i class="bi bi-person-fill"></i></div></div>
                         <h5 class="text-white fw-bold mb-1">${emp.persona.nombre} ${emp.persona.primerApellido}</h5>
                         <div class="mb-3"><span class="card-role-badge">${emp.rol ? emp.rol.nombre : 'Staff'}</span></div>
-                        <button class="btn btn-sm btn-outline-light rounded-pill px-3 opacity-75" onclick='prepararModalEmpleado(${JSON.stringify(emp)})'>
-                            <i class="bi bi-pencil-square me-1"></i> Editar
-                        </button>
+                        
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-sm btn-outline-light rounded-pill px-3 opacity-75" onclick='prepararModalEmpleado(${JSON.stringify(emp)})'>
+                                <i class="bi bi-pencil-square me-1"></i> Editar
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="confirmarBaja(${emp.idEmpleado})">
+                                <i class="bi bi-trash3-fill me-1"></i> Baja
+                            </button>
+                        </div>
                     </div>
                 </div>`;
             contenedor.innerHTML += html;
@@ -245,7 +266,6 @@ function prepararModalEmpleado(empleado) {
     document.getElementById('empPassConfirm').value = '';
 
     if (empleado) {
-        // MODO EDICIÓN
         document.getElementById('tituloModalEmpleado').textContent = "Editar Empleado";
         document.getElementById('empId').value = empleado.idUsuario || empleado.idEmpleado; 
         document.getElementById('empNombre').value = empleado.persona.nombre;
@@ -260,15 +280,20 @@ function prepararModalEmpleado(empleado) {
         loginInput.disabled = true; 
         loginHelp.style.display = 'block'; 
         
+        if(empleado.sucursal) {
+            document.getElementById('empSucursal').value = empleado.sucursal.idSucursal;
+        }
+
         document.getElementById('empRol').value = empleado.idRol || 2;
     } else {
-        // MODO CREACIÓN
         document.getElementById('tituloModalEmpleado').textContent = "Contratar Nuevo Talento";
         document.getElementById('empId').value = "";
         
         loginInput.value = ""; 
         loginInput.disabled = false; 
         loginHelp.style.display = 'none';
+
+        document.getElementById('empSucursal').value = "";
     }
     
     new bootstrap.Modal(modalEl).show();
@@ -277,7 +302,7 @@ function prepararModalEmpleado(empleado) {
 async function guardarEmpleado() {
     const id = document.getElementById('empId').value;
     const nombre = document.getElementById('empNombre').value;
-    const primerApellido = document.getElementById('empPrimerApellido').value;
+    const primerApellido = document.getElementById('empPrimerApellido').value; // Variable correcta
     const segundoApellido = document.getElementById('empSegundoApellido').value;
     const fecha = document.getElementById('empFechaNacimiento').value;
 
@@ -285,15 +310,16 @@ async function guardarEmpleado() {
     const rol = document.getElementById('empRol').value;
     const pass = document.getElementById('empPass').value;
     const passConfirm = document.getElementById('empPassConfirm').value;
-    
-    if(!nombre || !primerApellido || !login) return Swal.fire('Error', 'Faltan datos obligatorios', 'warning');
+    const idSucursal = document.getElementById('empSucursal').value;
+
+    if(!nombre || !primerApellido || !login || !idSucursal) return Swal.fire('Error', 'Faltan datos (Sucursal obligatoria)', 'warning');    
     if(!id && !pass) return Swal.fire('Requerido', 'Asigna una contraseña inicial', 'warning');
     if(pass && pass !== passConfirm) return Swal.fire('Error', 'Las contraseñas no coinciden', 'error');
     
     let url, method, payload;
 
     if (id) {
-        // PUT
+        // PUT 
         url = `${API_URL}/usuarios/${id}`;
         method = 'PUT';
         payload = {
@@ -301,20 +327,20 @@ async function guardarEmpleado() {
             primerApellido: primerApellido,
             segundoApellido: segundoApellido,
             fechaNacimiento: fecha,
-            login: login,
             idRol: parseInt(rol),
-            password: pass ? pass : null
+            password: pass ? pass : null,
+            idSucursal: parseInt(idSucursal),
         };
     } else {
-        // POST (Creación)
+        // POST 
         url = `${API_URL}/empleados/nuevo`;
         method = 'POST';
         payload = {
             nombre: nombre,
             primerApellido: primerApellido,
             segundoApellido: segundoApellido,
-            fechaNacimiento: fecha, // LocalDate string
-            idSucursal: 1, 
+            fechaNacimiento: fecha,
+            idSucursal: parseInt(idSucursal), 
             login: login,
             password: pass
         };
@@ -671,4 +697,208 @@ async function eliminarCita(id) {
             if (typeof actualizarDashboard === 'function') actualizarDashboard();
         } else { Swal.fire('Error', 'No se pudo eliminar la cita.', 'error'); }
     } catch (e) { console.error(e); Swal.fire('Error', 'Fallo de conexión.', 'error'); }
+}
+
+// ==========================================
+//  GESTIÓN DE SUCURSALES (FALTABA ESTO)
+// ==========================================
+async function cargarSucursalesAdmin() {
+    const tbody = document.getElementById('tablaSucursalesAdmin');
+    if(!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Cargando sedes...</td></tr>';
+
+    try {
+        const resp = await fetch(`${API_URL}/sucursales`);
+        const sucursales = await resp.json();
+        tbody.innerHTML = '';
+
+        if (sucursales.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No hay sucursales registradas.</td></tr>';
+            return;
+        }
+
+        sucursales.forEach(s => {
+            // Badge de estado
+            const estadoBadge = s.activo 
+                ? '<span class="badge bg-success bg-opacity-25 text-success border border-success">ACTIVA</span>' 
+                : '<span class="badge bg-danger bg-opacity-25 text-danger border border-danger">INACTIVA</span>';
+            
+            // Botón para activar/desactivar (Ojo: usa la función cambiarEstadoSucursal)
+            const btnAccion = s.activo
+                ? `<button class="btn btn-sm btn-outline-danger border-0" onclick="cambiarEstadoSucursal(${s.idSucursal})" title="Desactivar"><i class="bi bi-eye-slash-fill"></i></button>`
+                : `<button class="btn btn-sm btn-outline-success border-0" onclick="cambiarEstadoSucursal(${s.idSucursal})" title="Activar"><i class="bi bi-eye-fill"></i></button>`;
+
+            // Codificamos el objeto para pasarlo al editar
+            const sString = encodeURIComponent(JSON.stringify(s));
+
+            const fila = `
+                <tr>
+                    <td class="ps-4 text-muted">#${s.idSucursal}</td>
+                    <td class="fw-bold text-white fs-5">${s.nombre}</td>
+                    <td>${estadoBadge}</td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-light border-0 me-2" onclick="prepararModalSucursal('${sString}')">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        ${btnAccion}
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += fila;
+        });
+    } catch (e) { console.error(e); }
+}
+
+function prepararModalSucursal(sucursalEncoded) {
+    const modalEl = document.getElementById('modalSucursal');
+    const form = document.getElementById('formSucursal');
+    // Reseteamos el formulario
+    form.reset();
+    
+    // Mostramos/Ocultamos el switch de "Activo" dependiendo si es nuevo o editar
+    const divActivo = document.getElementById('divSucActivo');
+
+    if (sucursalEncoded) {
+        // MODO EDITAR
+        const sucursal = JSON.parse(decodeURIComponent(sucursalEncoded));
+        document.getElementById('tituloModalSucursal').textContent = "Editar Sucursal";
+        document.getElementById('sucId').value = sucursal.idSucursal;
+        document.getElementById('sucNombre').value = sucursal.nombre;
+        
+        // Mostramos el switch y lo ponemos en su estado
+        if(divActivo) {
+            divActivo.classList.remove('d-none');
+            document.getElementById('sucActivo').checked = sucursal.activo;
+        }
+
+    } else {
+        // MODO CREAR
+        document.getElementById('tituloModalSucursal').textContent = "Nueva Apertura";
+        document.getElementById('sucId').value = "";
+        
+        // Ocultamos el switch (las nuevas nacen activas por defecto en el backend)
+        if(divActivo) divActivo.classList.add('d-none');
+    }
+    new bootstrap.Modal(modalEl).show();
+}
+
+async function guardarSucursal() {
+    const id = document.getElementById('sucId').value;
+    const nombre = document.getElementById('sucNombre').value;
+    // Solo leemos el checkbox si estamos editando (si tiene ID)
+    const activoCheck = document.getElementById('sucActivo');
+    
+    if (!nombre) return Swal.fire('Error', 'El nombre es obligatorio', 'warning');
+
+    const payload = { 
+        nombre: nombre,
+        // Si hay ID, mandamos el estado del check, si no, null (el backend lo pone true)
+        activo: id ? activoCheck.checked : null 
+    };
+
+    let url = id ? `${API_URL}/sucursales/${id}` : `${API_URL}/sucursales`;
+    let method = id ? 'PUT' : 'POST';
+
+    try {
+        const resp = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+            Swal.fire('Éxito', 'Sucursal guardada', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('modalSucursal')).hide();
+            cargarSucursalesAdmin();
+            cargarCatalogos(); // Actualiza también el select de la agenda
+        } else {
+            Swal.fire('Error', 'No se pudo guardar', 'error');
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function cambiarEstadoSucursal(id) {
+    try {
+        // Usamos DELETE para el "Soft Delete" (Activar/Desactivar)
+        const resp = await fetch(`${API_URL}/sucursales/${id}`, { method: 'DELETE' });
+        if(resp.ok) {
+            cargarSucursalesAdmin();
+        }
+    } catch (e) { console.error(e); }
+}
+
+// ==========================================
+//  UTILERÍA GLOBAL (Agrega esto al final)
+// ==========================================
+
+// Función para el ojito de las contraseñas (Perfil)
+window.togglePass = function(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    // Buscamos el botón (que es el vecino de al lado) y su ícono
+    const btn = input.nextElementSibling; 
+    const icon = btn.querySelector('i');
+
+    if (input.type === "password") {
+        // Mostrar contraseña
+        input.type = "text";
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash"); // Ojo tachado
+    } else {
+        // Ocultar contraseña
+        input.type = "password";
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye"); // Ojo normal
+    }
+};
+
+
+// ==========================================
+//  ELIMINAR EMPLEADO (BAJA LÓGICA)
+// ==========================================
+function confirmarBaja(idEmpleado) {
+    Swal.fire({
+        title: '¿Dar de baja?',
+        text: "El empleado ya no podrá acceder al sistema ni recibir citas.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, dar de baja',
+        cancelButtonText: 'Cancelar',
+        background: '#1e1e1e', // Estilo oscuro acorde a tu Barber King
+        color: '#fff'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            ejecutarBaja(idEmpleado);
+        }
+    });
+}
+
+async function ejecutarBaja(id) {
+    try {
+        // Controller (api/empleados/eliminar/{id})
+        const resp = await fetch(`${API_URL}/empleados/eliminar/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (resp.ok) {
+            Swal.fire({
+                title: '¡Listo!', 
+                text: 'El empleado ha sido dado de baja.', 
+                icon: 'success',
+                background: '#1e1e1e', 
+                color: '#fff',
+                confirmButtonColor: '#d4af37'
+            });
+            cargarEmpleados();
+        } else {
+            Swal.fire('Error', 'No se pudo realizar la baja.', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Fallo de conexión con el servidor.', 'error');
+    }
 }

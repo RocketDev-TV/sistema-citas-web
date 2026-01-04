@@ -21,6 +21,9 @@ public class Sucursal {
     @Column(name = "fk_id_establecimiento")
     private Integer idEstablecimiento;
 
+    @Column(name = "st_activo") 
+    private Boolean activo;
+
     @JsonIgnore
     @Column(name = "gm_ubicacion", columnDefinition = "geometry(Point,4326)")
     private Point ubicacion;

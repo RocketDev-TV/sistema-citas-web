@@ -20,4 +20,7 @@ public class Empleado {
     @ManyToOne
     @JoinColumn(name = "fk_id_sucursal")
     private Sucursal sucursal;
+
+    @Column(name = "st_activo")
+    private Integer stActivo;
 }
