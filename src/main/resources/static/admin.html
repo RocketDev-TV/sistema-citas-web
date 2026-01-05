@@ -333,10 +333,63 @@
                     <form id="formSucursal">
                         <input type="hidden" id="sucId">
 
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label class="form-label-barber">Nombre del Establecimiento</label>
                             <input type="text" id="sucNombre" class="form-control-barber"
                                 placeholder="Ej. Barber King Centro" required>
+                        </div>
+                        <div id="divToggleEditHorario" class="form-check form-switch mb-3 d-none">
+                            <input class="form-check-input" type="checkbox" id="checkEditHorario" onchange="toggleEdicionHorarios()">
+                            <label class="form-check-label text-warning fw-bold" for="checkEditHorario">
+                                <i class="bi bi-arrow-repeat me-1"></i> Reconfigurar Horarios Base
+                            </label>
+                        </div>
+                        <div id="divConfigHorarios" class="p-3 rounded border border-secondary bg-black bg-opacity-25">
+                            <h6 class="text-gold mb-3"><i class="bi bi-clock-history me-2"></i>Horarios de Apertura
+                                Iniciales</h6>
+
+                            <label class="form-label-barber small text-muted">Días Laborales</label>
+                            <div class="d-flex gap-2 flex-wrap mb-3">
+                                <input type="checkbox" class="btn-check check-dia-suc" id="dia-1" value="1"
+                                    checked><label class="btn btn-sm btn-outline-secondary" for="dia-1">Lun</label>
+                                <input type="checkbox" class="btn-check check-dia-suc" id="dia-2" value="2"
+                                    checked><label class="btn btn-sm btn-outline-secondary" for="dia-2">Mar</label>
+                                <input type="checkbox" class="btn-check check-dia-suc" id="dia-3" value="3"
+                                    checked><label class="btn btn-sm btn-outline-secondary" for="dia-3">Mié</label>
+                                <input type="checkbox" class="btn-check check-dia-suc" id="dia-4" value="4"
+                                    checked><label class="btn btn-sm btn-outline-secondary" for="dia-4">Jue</label>
+                                <input type="checkbox" class="btn-check check-dia-suc" id="dia-5" value="5"
+                                    checked><label class="btn btn-sm btn-outline-secondary" for="dia-5">Vie</label>
+                                <input type="checkbox" class="btn-check check-dia-suc" id="dia-6" value="6"
+                                    checked><label class="btn btn-sm btn-outline-secondary" for="dia-6">Sáb</label>
+                                <input type="checkbox" class="btn-check check-dia-suc" id="dia-7" value="7"><label
+                                    class="btn btn-sm btn-outline-secondary" for="dia-7">Dom</label>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label-barber small">Turno 1 (Mañana)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="time" id="sucT1Inicio"
+                                            class="form-control bg-dark text-white border-secondary" value="09:00">
+                                        <span class="input-group-text bg-secondary border-secondary text-white">-</span>
+                                        <input type="time" id="sucT1Fin"
+                                            class="form-control bg-dark text-white border-secondary" value="14:00">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label-barber small">Turno 2 (Tarde)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="time" id="sucT2Inicio"
+                                            class="form-control bg-dark text-white border-secondary" value="16:00">
+                                        <span class="input-group-text bg-secondary border-secondary text-white">-</span>
+                                        <input type="time" id="sucT2Fin"
+                                            class="form-control bg-dark text-white border-secondary" value="20:00">
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="text-muted mt-2 d-block" style="font-size: 0.7rem;">* Se generarán estos
+                                bloques para los días seleccionados.</small>
                         </div>
 
                         <div class="form-check form-switch mt-3 d-none" id="divSucActivo">
@@ -345,9 +398,17 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-barber rounded-pill px-4" onclick="guardarSucursal()">GUARDAR
-                        SUCURSAL</button>
+                <div class="modal-footer justify-content-between"> <button type="button"
+                        class="btn btn-outline-danger d-none" id="btnEliminarSucursal"
+                        onclick="confirmarBorrarSucursal()">
+                        <i class="bi bi-trash3-fill"></i> Eliminar
+                    </button>
+
+                    <div>
+                        <button type="button" class="btn btn-outline-secondary me-2"
+                            data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-barber px-4" onclick="guardarSucursal()">GUARDAR</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -524,6 +585,67 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-barber rounded-pill px-4"
                         onclick="guardarClienteAdmin()">GUARDAR CAMBIOS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalHorario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="background-color: #1e1e1e; color: #fff; border: 1px solid #333;">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-calendar-week text-gold me-2"></i>Gestión de Turnos
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-dark d-flex align-items-center mb-4" role="alert">
+                        <i class="bi bi-person-badge fs-4 me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold" id="lblNombreEmpleadoHorario">Nombre Empleado</h6>
+                            <small class="text-muted">Selecciona los bloques de trabajo activos.</small>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="inputIdEmpleadoHorario">
+
+                    <div id="contenedorMatrizHorarios" class="table-responsive">
+                        <div class="text-center py-4 text-muted">Cargando plantilla...</div>
+                    </div>
+                    <hr class="border-secondary my-4">
+
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h6 class="fw-bold text-gold mb-3"><i class="bi bi-airplane me-2"></i>Agregar Descanso
+                            </h6>
+                            <div class="input-group mb-3">
+                                <input type="date" class="form-control bg-dark text-white border-secondary"
+                                    id="inputFechaDescanso">
+                                <button class="btn btn-outline-light" type="button" onclick="agregarDiaDescanso()">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">Selecciona días específicos no laborales (vacaciones,
+                                permisos).</small>
+                        </div>
+
+                        <div class="col-md-7 border-start border-secondary">
+                            <h6 class="fw-bold text-white mb-3">Días Programados</h6>
+                            <div id="listaDescansos" class="d-flex flex-wrap gap-2"
+                                style="max-height: 150px; overflow-y: auto;">
+                                <span class="text-muted small fst-italic">No hay días asignados.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-gold fw-bold" onclick="guardarAsignacionHorarios()"
+                        style="background-color: #d4af37; color: #000;">
+                        <i class="bi bi-save me-2"></i>Guardar Horario
+                    </button>
                 </div>
             </div>
         </div>

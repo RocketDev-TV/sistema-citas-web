@@ -2,11 +2,13 @@ package mx.ipn.upiicsa.sistema_citas.external;
 
 import mx.ipn.upiicsa.sistema_citas.bs.HorarioBs;
 import mx.ipn.upiicsa.sistema_citas.dto.AsignacionHorarioDto;
+import mx.ipn.upiicsa.sistema_citas.mv.DiaDescanso;
 import mx.ipn.upiicsa.sistema_citas.mv.Horario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -35,5 +37,30 @@ public class HorarioController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    //Endpoints para descanso 
+    @GetMapping("/descansos/{idEmpleado}")
+    public List<DiaDescanso> getDescansos(@PathVariable Integer idEmpleado) {
+        return horarioBs.obtenerDescansos(idEmpleado);
+    }
+
+    @PostMapping("/descansos/{idEmpleado}")
+    public ResponseEntity<?> agregarDescanso(@PathVariable Integer idEmpleado, @RequestBody String fechaStr) {
+        // Recibimos la fecha como string "2025-12-25"
+        try {
+            String limpia = fechaStr.replace("\"", ""); 
+            LocalDate fecha = LocalDate.parse(limpia);
+            horarioBs.agregarDescanso(idEmpleado, fecha);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Fecha inválida");
+        }
+    }
+
+    @DeleteMapping("/descansos/{idDescanso}")
+    public ResponseEntity<?> eliminarDescanso(@PathVariable Integer idDescanso) {
+        horarioBs.eliminarDescanso(idDescanso);
+        return ResponseEntity.ok().build();
     }
 }

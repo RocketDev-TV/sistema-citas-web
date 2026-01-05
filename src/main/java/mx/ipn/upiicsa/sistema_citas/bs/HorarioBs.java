@@ -6,6 +6,7 @@ import mx.ipn.upiicsa.sistema_citas.mv.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -15,6 +16,8 @@ public class HorarioBs {
     private HorarioRepository horarioRepository;
     @Autowired
     private EmpleadoRepository empleadoRepository;
+    @Autowired
+    private DiaDescansoRepository diaDescansoRepository;
 
     // 1. Obtener todos los horarios posibles de una sucursal
     public List<Horario> obtenerPlantillaHorarios(Integer idSucursal) {
@@ -40,4 +43,27 @@ public class HorarioBs {
         // Guardamos
         empleadoRepository.save(emp);
     }
+
+    public List<DiaDescanso> obtenerDescansos(Integer idEmpleado) {
+        return diaDescansoRepository.findByEmpleadoIdEmpleado(idEmpleado);
+    }
+
+    public void agregarDescanso(Integer idEmpleado, LocalDate fecha) {
+        // Validamos si ya existe para no duplicar
+        List<DiaDescanso> actuales = diaDescansoRepository.findByEmpleadoIdEmpleado(idEmpleado);
+        boolean existe = actuales.stream().anyMatch(d -> d.getFecha().isEqual(fecha));
+        
+        if (!existe) {
+            Empleado emp = empleadoRepository.findById(idEmpleado).orElseThrow();
+            DiaDescanso descanso = new DiaDescanso();
+            descanso.setEmpleado(emp);
+            descanso.setFecha(fecha);
+            diaDescansoRepository.save(descanso);
+        }
+    }
+
+    public void eliminarDescanso(Integer idDiaDescanso) {
+        diaDescansoRepository.deleteById(idDiaDescanso);
+    }
+    
 }

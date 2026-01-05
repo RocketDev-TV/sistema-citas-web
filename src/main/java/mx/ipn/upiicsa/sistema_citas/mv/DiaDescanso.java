@@ -1,5 +1,6 @@
 package mx.ipn.upiicsa.sistema_citas.mv;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
@@ -15,7 +16,8 @@ public class DiaDescanso {
 
     @ManyToOne
     @JoinColumn(name = "fk_id_empleado")
-    private Empleado empleado;
+    @JsonIgnore 
+    private Empleado empleado; 
 
     @Column(name = "fh_descanso")
     private LocalDate fecha;

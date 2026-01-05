@@ -7,12 +7,16 @@ import lombok.Data;
 @Entity
 @Table(name = "tce04_dia_laboral")
 public class DiaLaboral {
+    
     @Id
     @Column(name = "id_dia")
     private Integer idDia;
 
     @Column(name = "tx_nombre")
     private String nombre; // Lunes, Martes...
+
+    @Column(name = "tx_descripcion")
+    private String descripcion; 
 
     @Column(name = "st_activo")
     private Integer activo;
