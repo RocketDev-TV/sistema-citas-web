@@ -1,3 +1,10 @@
+/* --- REGLA DE ORO: CERO DESBORDES --- */
+html, body {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    position: relative;
+}
+
 /* =========================================
    1. ESTILOS CLÁSICOS (AGENDA Y NAVBAR)
    ========================================= */
@@ -238,4 +245,60 @@
         width: 100%;
         margin-top: 10px;
     }
+}
+
+/* ===========================
+   Estilo nuevo para botón Salir
+=========================== */
+.btn-logout-custom {
+    /* Estado inicial: Transparente con texto blanco medio apagado */
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Borde muy sutil */
+    transition: all 0.3s ease;
+}
+
+.btn-logout-custom:hover {
+    /* Al pasar el mouse: Se pone rojito sutil y el texto brilla */
+    background-color: rgba(220, 53, 69, 0.15); /* Rojo Bootstrap muy transparente */
+    color: #ff6b6b; /* Un rojo claro */
+    border-color: #ff6b6b;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.2); /* Un pequeño resplandor */
+}
+
+/* Ajuste para el texto pequeño dentro del botón */
+.btn-logout-custom small {
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+
+/* =========================================
+   6. NAVEGACIÓN RESPONSIVA (ESTILO WRAP / APILADO)
+   ========================================= */
+
+.nav-scroll-barber {
+    /* 1. Flexbox Básico */
+    display: flex !important;
+    
+    /* 2. LA CLAVE: Permitir que los botones bajen si no caben */
+    flex-wrap: wrap !important; 
+    
+    /* 3. Espacio "considerable" entre botones (Arriba/Abajo y Lados) */
+    gap: 15px; 
+    
+    /* 4. Limpieza de estilos viejos de scroll */
+    overflow: visible !important;
+    white-space: normal !important;
+    padding-bottom: 0;
+}
+
+/* Asegurar que los botones no se estiren deformes */
+.nav-scroll-barber .nav-item {
+    flex: 0 1 auto; /* "0" impide que crezcan de más, "auto" respeta su tamaño */
+}
+
+.nav-scroll-barber .nav-link {
+    width: 100%; /* Asegura click en toda el área */
+    white-space: nowrap; /* El texto dentro del botón sí se mantiene en una línea */
 }

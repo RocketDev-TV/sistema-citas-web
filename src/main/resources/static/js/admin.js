@@ -12,33 +12,50 @@ let currentUser = null;
 document.addEventListener('DOMContentLoaded', () => {
     document.body.style.display = 'block';
 
-    // NavBar Info
+    // UI NavBar - Info Básica
     document.getElementById('nombreUsuario').textContent = `${currentUser.persona.nombre} ${currentUser.persona.primerApellido}`.toUpperCase();
-    document.getElementById('rolUsuario').textContent = currentUser.idRol === 1 ? 'ADMIN' : 'STAFF';
+    
+    // UI NavBar - Rol y Sucursal
+    const nombreRol = currentUser.idRol === 1 ? 'ADMIN MASTER' : 'BARBER STAFF';
+    document.getElementById('rolUsuario').textContent = nombreRol;
 
-    // Staff Restrictions
-    if (currentUser.idRol === 2) {
-        ['pills-equipo-tab', 'pills-servicios-tab', 'pills-sucursales-tab', 'pills-clientes-tab'].forEach(id => {
-            const tab = document.getElementById(id);
-            if (tab) tab.remove();
-        });
+    // Mostrar Sucursal si tiene
+    if (currentUser.sucursal) {
+        document.getElementById('sucursalUsuario').innerHTML = `<i class="bi bi-geo-alt-fill me-1"></i>${currentUser.sucursal.nombre}`;
+    } else if (currentUser.idRol === 1) {
+        document.getElementById('sucursalUsuario').textContent = "CORPORATIVO";
     }
 
-    // Carga inicial
+    // Staff Security & Dashboard Personalizado
+    if (currentUser.idRol === 2) {
+        // Borrar tabs de admin
+        ['pills-equipo-tab', 'pills-servicios-tab', 'pills-sucursales-tab', 'pills-clientes-tab'].forEach(id => {
+            const tab = document.getElementById(id);
+            if(tab) tab.remove();
+        });
+
+        const btnAgendar = document.querySelector('button[data-bs-target="#modalNuevaCita"]');
+        if(btnAgendar) {
+            const btnHorario = document.createElement('button');
+            btnHorario.className = 'btn btn-outline-light me-2';
+            btnHorario.innerHTML = '<i class="bi bi-calendar3 me-2"></i>Mi Horario';
+            btnHorario.onclick = verMiHorario; // Función nueva
+            btnAgendar.parentNode.insertBefore(btnHorario, btnAgendar);
+        }
+    }
+
+    // Cargas iniciales
     cargarClientes();
     cargarCitas();
     cargarCatalogos();
     if (currentUser.idRol === 1) cargarEmpleados();
 
-    // Listeners Utilería
     setupToggle('toggleEmpPass', 'empPass', 'iconEmpPass');
     setupToggle('toggleEmpPassConfirm', 'empPassConfirm', 'iconEmpPassConfirm');
     setupToggle('togglePerfilPass', 'perfilPass1', 'iconPerfilPass');
     setupToggle('toggleCliPass', 'cliPass', 'iconCliPass');
-    
-    // Listener fecha agenda
-    const fechaInput = document.getElementById('fechaInicio');
-    if(fechaInput) fechaInput.addEventListener('change', actualizarInfoTiempo);
+    const fInput = document.getElementById('fechaInicio');
+    if(fInput) fInput.addEventListener('change', actualizarInfoTiempo);
 });
 
 // ==========================================
@@ -844,5 +861,78 @@ function toggleEdicionHorarios() {
         div.classList.remove('d-none'); // Mostrar panel
     } else {
         div.classList.add('d-none'); // Ocultar panel
+    }
+}
+
+// ==========================================
+//  MI HORARIO (STAFF VIEW)
+// ==========================================
+async function verMiHorario() {
+    const modalEl = document.getElementById('modalMiHorario');
+    const container = document.getElementById('contenedorMiHorario');
+    const listaDescansos = document.getElementById('listaMisDescansos');
+    
+    new bootstrap.Modal(modalEl).show();
+    
+    try {
+        const resH = await fetch(`${API_URL}/horarios/empleado/${currentUser.idUsuario}`); // idUsuario es idEmpleado
+        const horarios = await resH.json();
+        
+        const resD = await fetch(`${API_URL}/horarios/descansos/${currentUser.idUsuario}`);
+        const descansos = await resD.json();
+
+        if (horarios.length === 0) {
+            container.innerHTML = '<div class="alert alert-dark border-secondary text-muted">No tienes turnos asignados aún.</div>';
+        } else {
+            // Agrupar por día
+            const diasMap = new Map();
+            const ordenDias = { 'Lunes':1, 'Martes':2, 'Miércoles':3, 'Jueves':4, 'Viernes':5, 'Sábado':6, 'Domingo':7 };
+            
+            horarios.forEach(h => {
+                const n = h.diaLaboral.nombre;
+                if (!diasMap.has(n)) diasMap.set(n, []);
+                diasMap.get(n).push(h);
+            });
+
+            // Ordenar días
+            const diasOrdenados = Array.from(diasMap.keys()).sort((a,b) => ordenDias[a] - ordenDias[b]);
+
+            let html = '<ul class="list-group list-group-flush text-start rounded">';
+            
+            diasOrdenados.forEach(dia => {
+                const turnos = diasMap.get(dia);
+                // Ordenar horas
+                turnos.sort((a,b) => a.horaInicio.localeCompare(b.horaInicio));
+                
+                const turnosBadges = turnos.map(t => {
+                    const ini = t.horaInicio.substring(0,5);
+                    const fin = t.horaFin.substring(0,5);
+                    return `<span class="badge bg-warning text-dark border border-warning me-1">${ini} - ${fin}</span>`;
+                }).join('');
+
+                html += `
+                    <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between align-items-center px-0">
+                        <span class="fw-bold text-gold" style="width: 100px;">${dia}</span>
+                        <div>${turnosBadges}</div>
+                    </li>`;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+        listaDescansos.innerHTML = '';
+        if (descansos.length === 0) {
+            listaDescansos.innerHTML = '<span class="text-muted small fst-italic">No hay días libres próximos.</span>';
+        } else {
+            descansos.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+            descansos.forEach(d => {
+                const f = new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-ES', {weekday: 'short', day:'numeric', month:'short'});
+                listaDescansos.innerHTML += `<span class="badge bg-dark border border-secondary text-white py-2 px-3">${f}</span>`;
+            });
+        }
+
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<div class="text-danger">Error al cargar horario.</div>';
     }
 }

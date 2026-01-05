@@ -20,49 +20,60 @@
                 <div class="text-end d-none d-md-block lh-1">
                     <div class="text-white fw-bold" id="nombreUsuario">...</div>
                     <small class="text-muted" id="rolUsuario">Admin</small>
+                    <small class="text-warning fw-bold" id="sucursalUsuario"
+                        style="font-size: 0.7rem; letter-spacing: 1px;"></small>
                 </div>
                 <button class="btn btn-outline-warning btn-sm px-3 fw-bold" onclick="abrirMiPerfil()">
                     <i class="bi bi-person-circle me-2"></i>PERFIL
                 </button>
-                <button class="btn btn-outline-secondary btn-sm rounded-0 text-uppercase" onclick="cerrarSesion()">Salir
-                    🚪</button>
+                <li class="nav-item ms-3 d-flex align-items-center">
+                    <button class="btn rounded-pill px-3 py-1 d-flex align-items-center btn-logout-custom"
+                        onclick="cerrarSesion()" title="Cerrar Sesión">
+                        <small class="me-2 text-uppercase d-none d-sm-inline">Salir</small>
+                        <i class="bi bi-power fs-5"></i>
+                    </button>
+                </li>
             </div>
         </div>
     </nav>
 
     <div class="container-fluid px-4">
-        <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active rounded-pill px-4 me-2 fw-bold" id="pills-agenda-tab"
-                    data-bs-toggle="pill" data-bs-target="#pills-agenda" type="button" onclick="cargarCitas()">
-                    📅 Agenda
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link rounded-pill px-4 me-2 fw-bold" id="pills-clientes-tab" data-bs-toggle="pill"
-                    data-bs-target="#pills-clientes" type="button" onclick="cargarGestionClientes()">
-                    👥 Clientes
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link rounded-pill px-4 me-2 fw-bold" id="pills-equipo-tab" data-bs-toggle="pill"
-                    data-bs-target="#pills-equipo" type="button" onclick="cargarEmpleados()">
-                    👥 Equipo
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link rounded-pill px-4 fw-bold" id="pills-servicios-tab" data-bs-toggle="pill"
-                    data-bs-target="#pills-servicios" type="button" onclick="cargarAdminServicios()">
-                    ✂️ Catálogo
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link rounded-pill px-4 fw-bold" id="pills-sucursales-tab" data-bs-toggle="pill"
-                    data-bs-target="#pills-sucursales" type="button" onclick="cargarSucursalesAdmin()">
-                    🏢 Sucursales
-                </button>
-            </li>
-        </ul>
+        <div class="nav-scroller-container mb-4">
+
+            <ul class="nav nav-pills nav-scroll-barber mb-4 justify-content-center" id="pills-tab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active rounded-pill px-4 fw-bold" id="pills-agenda-tab"
+                        data-bs-toggle="pill" data-bs-target="#pills-agenda" type="button" onclick="cargarCitas()">
+                        📅 Agenda
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4 fw-bold" id="pills-clientes-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-clientes" type="button" onclick="cargarGestionClientes()">
+                        👥 Clientes
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4 fw-bold" id="pills-equipo-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-equipo" type="button" onclick="cargarEmpleados()">
+                        👥 Equipo
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4 fw-bold" id="pills-servicios-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-servicios" type="button" onclick="cargarAdminServicios()">
+                        ✂️ Catálogo
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4 fw-bold" id="pills-sucursales-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-sucursales" type="button" onclick="cargarSucursalesAdmin()">
+                        🏢 Sucursales
+                    </button>
+                </li>
+            </ul>
+
+        </div>
 
         <div class="tab-content" id="pills-tabContent">
 
@@ -339,7 +350,8 @@
                                 placeholder="Ej. Barber King Centro" required>
                         </div>
                         <div id="divToggleEditHorario" class="form-check form-switch mb-3 d-none">
-                            <input class="form-check-input" type="checkbox" id="checkEditHorario" onchange="toggleEdicionHorarios()">
+                            <input class="form-check-input" type="checkbox" id="checkEditHorario"
+                                onchange="toggleEdicionHorarios()">
                             <label class="form-check-label text-warning fw-bold" for="checkEditHorario">
                                 <i class="bi bi-arrow-repeat me-1"></i> Reconfigurar Horarios Base
                             </label>
@@ -646,6 +658,33 @@
                         style="background-color: #d4af37; color: #000;">
                         <i class="bi bi-save me-2"></i>Guardar Horario
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalMiHorario" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: #1e1e1e; border: 1px solid #333; color: white;">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title fw-bold text-gold"><i class="bi bi-calendar-week me-2"></i>MI HORARIO</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="contenedorMiHorario" class="text-center">
+                        <div class="spinner-border text-gold" role="status"></div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top border-secondary">
+                        <h6 class="text-white fw-bold mb-2">Mis Días Libres Programados</h6>
+                        <div id="listaMisDescansos" class="d-flex flex-wrap gap-2">
+                            <span class="text-muted small">Sin descansos próximos.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-barber w-100 rounded-pill"
+                        data-bs-dismiss="modal">ENTENDIDO</button>
                 </div>
             </div>
         </div>
