@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -29,8 +30,13 @@ public class EmpleadoController {
     }
 
     @PostMapping("/nuevo")
-    public Empleado contratarNuevo(@RequestBody AltaEmpleadoDto dto) {
-        return empleadoBs.contratarNuevo(dto);
+    public ResponseEntity<?> contratarNuevo(@RequestBody AltaEmpleadoDto dto) {
+        try {
+            Empleado nuevo = empleadoBs.contratarNuevo(dto);
+            return ResponseEntity.ok(nuevo);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("message", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/eliminar/{id}")

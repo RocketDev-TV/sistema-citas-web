@@ -91,6 +91,19 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+
+    @DeleteMapping("/{id}")
+    public void eliminarUsuario(@PathVariable("id") Integer id) {
+        usuarioBs.eliminarUsuarioCompleto(id);
+    }
+
+    @GetMapping("/existe/{login}")
+    public org.springframework.http.ResponseEntity<Boolean> verificarExistencia(@PathVariable String login) {
+        boolean existe = usuarioBs.existeLogin(login);
+        return org.springframework.http.ResponseEntity.ok(existe);
+    }
+
+
 }
 
 class ActualizarPerfilDto {

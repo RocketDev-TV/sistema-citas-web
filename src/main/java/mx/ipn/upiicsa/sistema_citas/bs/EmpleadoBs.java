@@ -25,7 +25,7 @@ public class EmpleadoBs {
     @Autowired
     private Utileria utileria;
 
-    // --- MÉTODO 1: CONTRATAR (Viejito - Solo vincula) ---
+    // --- MÉTODO 1: CONTRATAR ---
     public Empleado contratar(EmpleadoDto dto) {
         Persona persona = personaRepository.findById(dto.getIdPersona())
                 .orElseThrow(() -> new RuntimeException("¡Esa persona no existe!"));
@@ -37,10 +37,11 @@ public class EmpleadoBs {
         empleado.setPersona(persona);
         empleado.setSucursal(sucursal);
 
+        empleado.setStActivo(1); 
+
         return empleadoRepository.save(empleado);
     }
 
-    // --- MÉTODO 2: CONTRATAR NUEVO (Full - Crea todo) ---
     @Transactional
     public Empleado contratarNuevo(AltaEmpleadoDto dto) {
         // 1. Validar que la sucursal exista
@@ -66,15 +67,15 @@ public class EmpleadoBs {
         usuario.setPersona(persona);
         usuario.setLogin(dto.getLogin());
         usuario.setPassword(utileria.encriptar(dto.getPassword()));
-        usuario.setIdRol(2);
+        usuario.setIdRol(2); // Rol 2 = Staff
         usuario.setActivo(true);
         usuarioRepository.save(usuario);
 
-        // 5. Crear Empleado 
         Empleado empleado = new Empleado();
         empleado.setPersona(persona);
-
         empleado.setSucursal(sucursal); 
+
+        empleado.setStActivo(1);
 
         return empleadoRepository.save(empleado);
     }
@@ -86,7 +87,7 @@ public class EmpleadoBs {
     public void darDeBajaEmpleado(Integer id) {
         Empleado emp = empleadoRepository.findById(id).orElse(null);
         if (emp != null) {
-            emp.setStActivo(0);
+            emp.setStActivo(0); // Baja lógica
             empleadoRepository.save(emp);
         }
     }
