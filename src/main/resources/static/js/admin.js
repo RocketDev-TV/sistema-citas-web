@@ -1,5 +1,6 @@
 const API_URL = '/api';
 let currentUser = null;
+let todosLosEmpleados = [];
 
 // --- INIT & AUTH ---
 (function init() {
@@ -63,42 +64,56 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 async function cargarCatalogos() {
     try {
-        // Servicios
-        const resServ = await fetch(`${API_URL}/servicios`);
-        const servicios = await resServ.json();
+        const respServicios = await fetch(`${API_URL}/servicios`);
+        const servicios = await respServicios.json();
+        const serviciosActivos = servicios.filter(s => s.activo === 1); 
+
         const container = document.getElementById('containerServicios');
-        
-        if (container) {
+        if(container) {
             container.innerHTML = '';
-            servicios.filter(s => s.activo === 1).forEach(serv => {
-                const precio = serv.precio || 0;
-                const col = document.createElement('div');
-                col.className = 'col-md-6';
-                col.innerHTML = `
-                    <div class="service-card" onclick="seleccionarServicio(this, ${serv.idServicio}, ${serv.duracion}, ${precio})">
+            serviciosActivos.forEach(serv => {
+                 let precioReal = serv.precio ? serv.precio : 0;
+                 let desc = serv.descripcion || "Servicio profesional.";
+                 const col = document.createElement('div');
+                 col.className = 'col-md-6';
+                 col.innerHTML = `
+                    <div class="service-card" onclick="seleccionarServicio(this, ${serv.idServicio}, ${serv.duracion}, ${precioReal})">
                         <i class="bi bi-scissors service-icon-bg"></i>
                         <div class="service-header">
                             <div class="service-title">${serv.nombre}</div>
-                            <div class="service-price">$${precio.toFixed(2)}</div>
+                            <div class="service-price">$${precioReal.toFixed(2)}</div>
                         </div>
-                        <p class="service-desc">"${serv.descripcion || 'Servicio profesional'}"</p>
-                        <div class="mt-2 text-end"><small style="opacity:0.6">⏱ ${serv.duracion} min</small></div>
-                    </div>`;
-                container.appendChild(col);
+                        <p class="service-desc">"${desc}"</p>
+                        <div class="mt-2 text-end">
+                            <small style="font-size: 0.7rem; opacity: 0.6;">⏱ ${serv.duracion} min</small>
+                        </div>
+                    </div>
+                 `;
+                 container.appendChild(col);
             });
         }
 
-        // Sucursales y Empleados para selects
-        const resSuc = await fetch(`${API_URL}/sucursales`);
-        const sucursales = await resSuc.json();
-        llenarSelect('selectSucursal', sucursales, 'idSucursal', 'nombre');
+        const respSuc = await fetch(`${API_URL}/sucursales`);
+        const sucursales = await respSuc.json();
+        const sucursalesActivas = sucursales.filter(s => s.activo === true);
+
+        llenarSelect('selectSucursal', sucursalesActivas, 'idSucursal', 'nombre');
+        
         llenarSelect('empSucursal', sucursales, 'idSucursal', 'nombre');
 
-        const resEmp = await fetch(`${API_URL}/empleados`);
-        const empleados = await resEmp.json();
-        llenarSelect('selectEmpleado', empleados, 'idEmpleado', 'persona.nombre');
+        const respEmp = await fetch(`${API_URL}/empleados`);
+        todosLosEmpleados = await respEmp.json();
 
-    } catch (e) { console.error(e); }
+        const selectSucursal = document.getElementById('selectSucursal');
+        if (selectSucursal) {
+
+            selectSucursal.addEventListener('change', (e) => filtrarBarberosPorSucursal(e.target.value));
+            
+            const selectEmp = document.getElementById('selectEmpleado');
+            if(selectEmp) selectEmp.innerHTML = '<option value="" selected disabled>← Elige Sucursal primero</option>';
+        }
+
+    } catch (error) { console.error("Error catálogos:", error); }
 }
 
 function llenarSelect(id, datos, valor, texto) {
@@ -934,5 +949,24 @@ async function verMiHorario() {
     } catch (e) {
         console.error(e);
         container.innerHTML = '<div class="text-danger">Error al cargar horario.</div>';
+    }
+}
+
+function filtrarBarberosPorSucursal(idSucursal) {
+    const selectEmp = document.getElementById('selectEmpleado');
+    if (!selectEmp) return;
+
+    // Filtramos la lista global buscando coincidencias
+    // Convertimos idSucursal a número porque del value viene como string
+    const id = parseInt(idSucursal);
+    
+    const barberosDisponibles = todosLosEmpleados.filter(emp => 
+        emp.sucursal && emp.sucursal.idSucursal === id
+    );
+
+    if (barberosDisponibles.length > 0) {
+        llenarSelect('selectEmpleado', barberosDisponibles, 'idEmpleado', 'persona.nombre');
+    } else {
+        selectEmp.innerHTML = '<option value="" selected disabled>Sin barberos en esta sede</option>';
     }
 }
