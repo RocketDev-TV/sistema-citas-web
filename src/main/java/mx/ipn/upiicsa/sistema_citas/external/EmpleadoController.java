@@ -1,6 +1,7 @@
 package mx.ipn.upiicsa.sistema_citas.external;
 
 import mx.ipn.upiicsa.sistema_citas.bs.EmpleadoBs;
+import mx.ipn.upiicsa.sistema_citas.bs.UsuarioBs;
 import mx.ipn.upiicsa.sistema_citas.dto.AltaEmpleadoDto;
 import mx.ipn.upiicsa.sistema_citas.dto.EmpleadoDto;
 import mx.ipn.upiicsa.sistema_citas.mv.Empleado;
@@ -17,6 +18,8 @@ public class EmpleadoController {
 
     @Autowired
     private EmpleadoBs empleadoBs;
+    @Autowired
+    private UsuarioBs usuarioBs;
 
     @GetMapping
     public List<Empleado> listar() {
@@ -42,10 +45,12 @@ public class EmpleadoController {
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<?> eliminarEmpleado(@PathVariable Integer id) {
         try {
-            empleadoBs.darDeBajaEmpleado(id); 
+
+            usuarioBs.eliminarUsuarioCompleto(id); 
+            
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 }

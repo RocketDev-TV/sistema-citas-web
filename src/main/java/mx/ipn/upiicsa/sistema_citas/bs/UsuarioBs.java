@@ -253,25 +253,30 @@ public class UsuarioBs {
         usuarioRepository.save(usuario);
     }
 
+    // --- BORRADO TOTAL (HARD DELETE) ---
     @Transactional 
     public void eliminarUsuarioCompleto(Integer idUsuario) {
         Usuario u = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
+        
         Integer idPersona = u.getPersona().getIdPersona();
 
         if (u.getIdRol() == 3) { 
+
             citaRepository.deleteByClienteId(idPersona);
-        } else if (u.getIdRol() == 2 || u.getIdRol() == 1) { 
-            // Limpieza profunda para staff
-            horarioRepository.desasignarEmpleadosPorIdEmpleado(u.getIdUsuario()); 
             
-            // IMPORTANTE: También borrar de la tabla de empleados si existe
+        } else if (u.getIdRol() == 2 || u.getIdRol() == 1) { 
+
+            horarioRepository.desasignarEmpleadosPorIdEmpleado(u.getIdUsuario()); 
+
             if(empleadoRepository.existsById(idUsuario)) {
                  empleadoRepository.deleteById(idUsuario);
             }
         }
+
         usuarioRepository.deleteById(idUsuario);
+        
+        personaRepository.deleteById(idPersona); 
     }
 
     public void eliminar(Integer id) {

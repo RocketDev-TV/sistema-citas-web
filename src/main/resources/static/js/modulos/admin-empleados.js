@@ -2,23 +2,37 @@
 //  EMPLEADOS Y HORARIOS
 // ==========================================
 
+console.log("=== CARGANDO VERSIÓN NUEVA CON SUCURSAL ===");
+
 async function cargarEmpleados() {
     const container = document.getElementById('listaEmpleados');
     if (!container) return;
-    
+
     try {
         const res = await fetch(`${API_URL}/empleados`);
         const emps = await res.json();
         container.innerHTML = '';
-        
+
         emps.forEach(e => {
             const rol = e.idRol === 1 ? 'Admin' : 'Staff/Barbero';
+
+            // 1. Preparamos el badge (pequeño y amarillo)
+            const htmlSucursal = e.sucursal
+                ? `<span class="badge bg-dark border border-warning text-warning ms-2" style="font-size: 0.6em; vertical-align: middle;"><i class="bi bi-geo-alt-fill"></i> ${e.sucursal.nombre}</span>`
+                : `<span class="badge bg-dark border border-danger text-danger ms-2" style="font-size: 0.6em; vertical-align: middle;">Sin Sucursal</span>`;
+
             container.innerHTML += `
                 <div class="col">
                     <div class="employee-card h-100 text-center p-4">
                         <div class="avatar-ring mb-3"><div class="avatar-img"><i class="bi bi-person-fill"></i></div></div>
-                        <h5 class="text-white fw-bold mb-1">${e.persona.nombre} ${e.persona.primerApellido}</h5>
+                        
+                        <div class="d-flex justify-content-center align-items-center mb-1">
+                            <h5 class="text-white fw-bold m-0">${e.persona.nombre} ${e.persona.primerApellido}</h5>
+                            ${htmlSucursal}
+                        </div>
+                        
                         <div class="mb-3"><span class="card-role-badge">${rol}</span></div>
+                        
                         <div class="d-flex justify-content-center gap-2 mt-3">
                             <button class="btn btn-sm btn-outline-light rounded-pill px-2" onclick='prepararModalEmpleado(${JSON.stringify(e)})'><i class="bi bi-pencil-square"></i></button>
                             <button class="btn btn-sm btn-outline-warning rounded-pill px-2" onclick="abrirGestionHorarios(${e.idEmpleado}, '${e.persona.nombre}', ${e.sucursal?.idSucursal || 0})"><i class="bi bi-calendar3"></i></button>
@@ -44,7 +58,7 @@ function prepararModalEmpleado(e) {
         document.getElementById('empFechaNacimiento').value = e.persona.fechaNacimiento ? e.persona.fechaNacimiento.split('T')[0] : '';
         document.getElementById('empSucursal').value = e.sucursal?.idSucursal || '';
         document.getElementById('empRol').value = e.idRol || 2;
-        
+
         loginInput.value = e.login || 'No editable';
         loginInput.disabled = true;
     } else {
@@ -59,10 +73,10 @@ async function guardarEmpleado() {
     const id = document.getElementById('empId').value;
     const pass = document.getElementById('empPass').value;
     const loginInput = document.getElementById('empLogin'); // Referencia al input
-    
+
     if (!id && !pass) return Swal.fire('Error', 'Contraseña requerida para nuevos', 'warning');
-    
-    const loginReal = loginInput.disabled ? null : loginInput.value; 
+
+    const loginReal = loginInput.disabled ? null : loginInput.value;
     // ----------------------------
 
     const payload = {
@@ -71,9 +85,9 @@ async function guardarEmpleado() {
         segundoApellido: document.getElementById('empSegundoApellido').value,
         fechaNacimiento: document.getElementById('empFechaNacimiento').value,
         idSucursal: parseInt(document.getElementById('empSucursal').value),
-        
+
         login: loginReal,
-        
+
         idRol: parseInt(document.getElementById('empRol').value),
         password: pass || null
     };
@@ -82,7 +96,7 @@ async function guardarEmpleado() {
     const method = id ? 'PUT' : 'POST';
 
     try {
-        const res = await fetch(url, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
+        const res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (res.ok) {
             Swal.fire('Guardado', '', 'success');
             bootstrap.Modal.getInstance(document.getElementById('modalEmpleado')).hide();
@@ -90,7 +104,7 @@ async function guardarEmpleado() {
         } else {
             const err = await res.json();
             const mensajeError = err.message || "No se pudo guardar el empleado.";
-            
+
             Swal.fire('Atención', mensajeError, 'warning');
         }
     } catch (e) { Swal.fire('Error', 'Fallo conexión', 'error'); }
@@ -116,23 +130,23 @@ let horariosPlantilla = [];
 
 async function abrirGestionHorarios(idEmp, nombre, idSuc) {
     if (!idSuc) return Swal.fire('Error', 'Empleado sin sucursal', 'error');
-    
+
     document.getElementById('lblNombreEmpleadoHorario').textContent = nombre;
     document.getElementById('inputIdEmpleadoHorario').value = idEmp;
     const container = document.getElementById('contenedorMatrizHorarios');
     container.innerHTML = '<div class="text-center py-5 text-warning">Cargando...</div>';
     document.getElementById('inputFechaDescanso').value = '';
-    
+
     new bootstrap.Modal(document.getElementById('modalHorario')).show();
 
     try {
         const [p, a] = await Promise.all([
-            fetch(`${API_URL}/horarios/sucursal/${idSuc}`).then(r=>r.json()),
-            fetch(`${API_URL}/horarios/empleado/${idEmp}`).then(r=>r.json())
+            fetch(`${API_URL}/horarios/sucursal/${idSuc}`).then(r => r.json()),
+            fetch(`${API_URL}/horarios/empleado/${idEmp}`).then(r => r.json())
         ]);
         horariosPlantilla = p;
         horariosAsignados = a;
-        
+
         renderizarMatriz();
         cargarDescansosUI(idEmp);
     } catch (e) { container.innerHTML = '<div class="text-danger">Error cargando datos</div>'; }
@@ -153,21 +167,21 @@ function renderizarMatriz() {
     });
 
     let html = '<table class="table table-dark table-hover align-middle"><thead><tr><th style="width:30%">Día</th><th>Turnos</th></tr></thead><tbody>';
-    
+
     dias.forEach((lista, dia) => {
         const checks = lista.map(h => {
             const isChecked = horariosAsignados.some(ha => ha.idHorario === h.idHorario);
             const cls = isChecked ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary';
-            const ini = h.horaInicio.substring(0,5);
-            const fin = h.horaFin.substring(0,5);
+            const ini = h.horaInicio.substring(0, 5);
+            const fin = h.horaFin.substring(0, 5);
             return `
-                <input type="checkbox" class="btn-check check-horario" id="chk-${h.idHorario}" value="${h.idHorario}" ${isChecked?'checked':''}>
+                <input type="checkbox" class="btn-check check-horario" id="chk-${h.idHorario}" value="${h.idHorario}" ${isChecked ? 'checked' : ''}>
                 <label class="btn btn-sm ${cls}" style="width:100px" for="chk-${h.idHorario}" onclick="toggleEstilo(this)">${ini} - ${fin}</label>
             `;
         }).join('');
         html += `<tr><td class="fw-bold text-gold">${dia}</td><td><div class="d-flex gap-2 flex-wrap">${checks}</div></td></tr>`;
     });
-    
+
     container.innerHTML = html + '</tbody></table>';
 }
 
@@ -184,13 +198,13 @@ function toggleEstilo(lbl) {
 async function guardarAsignacionHorarios() {
     const id = parseInt(document.getElementById('inputIdEmpleadoHorario').value);
     const ids = Array.from(document.querySelectorAll('.check-horario:checked')).map(c => parseInt(c.value));
-    
+
     const res = await fetch(`${API_URL}/horarios/asignar`, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({idEmpleado: id, idsHorarios: ids})
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idEmpleado: id, idsHorarios: ids })
     });
-    
-    if(res.ok) {
+
+    if (res.ok) {
         Swal.fire('Horario Guardado', '', 'success');
         bootstrap.Modal.getInstance(document.getElementById('modalHorario')).hide();
     } else Swal.fire('Error', 'No se pudo guardar', 'error');
@@ -204,10 +218,10 @@ async function cargarDescansosUI(id) {
         const lista = await res.json();
         cont.innerHTML = '';
         if (lista.length === 0) { cont.innerHTML = '<small class="text-muted">Sin descansos</small>'; return; }
-        
-        lista.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+
+        lista.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
         lista.forEach(d => {
-            const f = new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-ES', {day:'numeric', month:'short', year:'numeric'});
+            const f = new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
             cont.innerHTML += `<div class="badge bg-dark border border-secondary p-2 d-flex align-items-center">
                 <span class="me-2">${f}</span>
                 <i class="bi bi-x-circle-fill text-danger" style="cursor:pointer" onclick="eliminarDiaDescanso(${d.idDiaDescanso}, ${id})"></i>
@@ -219,10 +233,10 @@ async function cargarDescansosUI(id) {
 async function agregarDiaDescanso() {
     const id = document.getElementById('inputIdEmpleadoHorario').value;
     const f = document.getElementById('inputFechaDescanso').value;
-    if(!f) return;
-    
+    if (!f) return;
+
     const res = await fetch(`${API_URL}/horarios/descansos/${id}`, { method: 'POST', body: f });
-    if(res.ok) {
+    if (res.ok) {
         document.getElementById('inputFechaDescanso').value = '';
         cargarDescansosUI(id);
     }
@@ -238,13 +252,13 @@ async function verMiHorario() {
     const modalEl = document.getElementById('modalMiHorario');
     const container = document.getElementById('contenedorMiHorario');
     const listaDescansos = document.getElementById('listaMisDescansos');
-    
+
     new bootstrap.Modal(modalEl).show();
-    
+
     try {
         const resH = await fetch(`${API_URL}/horarios/empleado/${currentUser.idUsuario}`); // idUsuario es idEmpleado
         const horarios = await resH.json();
-        
+
         const resD = await fetch(`${API_URL}/horarios/descansos/${currentUser.idUsuario}`);
         const descansos = await resD.json();
 
@@ -253,8 +267,8 @@ async function verMiHorario() {
         } else {
             // Agrupar por día
             const diasMap = new Map();
-            const ordenDias = { 'Lunes':1, 'Martes':2, 'Miércoles':3, 'Jueves':4, 'Viernes':5, 'Sábado':6, 'Domingo':7 };
-            
+            const ordenDias = { 'Lunes': 1, 'Martes': 2, 'Miércoles': 3, 'Jueves': 4, 'Viernes': 5, 'Sábado': 6, 'Domingo': 7 };
+
             horarios.forEach(h => {
                 const n = h.diaLaboral.nombre;
                 if (!diasMap.has(n)) diasMap.set(n, []);
@@ -262,18 +276,18 @@ async function verMiHorario() {
             });
 
             // Ordenar días
-            const diasOrdenados = Array.from(diasMap.keys()).sort((a,b) => ordenDias[a] - ordenDias[b]);
+            const diasOrdenados = Array.from(diasMap.keys()).sort((a, b) => ordenDias[a] - ordenDias[b]);
 
             let html = '<ul class="list-group list-group-flush text-start rounded">';
-            
+
             diasOrdenados.forEach(dia => {
                 const turnos = diasMap.get(dia);
                 // Ordenar horas
-                turnos.sort((a,b) => a.horaInicio.localeCompare(b.horaInicio));
-                
+                turnos.sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
+
                 const turnosBadges = turnos.map(t => {
-                    const ini = t.horaInicio.substring(0,5);
-                    const fin = t.horaFin.substring(0,5);
+                    const ini = t.horaInicio.substring(0, 5);
+                    const fin = t.horaFin.substring(0, 5);
                     return `<span class="badge bg-warning text-dark border border-warning me-1">${ini} - ${fin}</span>`;
                 }).join('');
 
@@ -291,9 +305,9 @@ async function verMiHorario() {
         if (descansos.length === 0) {
             listaDescansos.innerHTML = '<span class="text-muted small fst-italic">No hay días libres próximos.</span>';
         } else {
-            descansos.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+            descansos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
             descansos.forEach(d => {
-                const f = new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-ES', {weekday: 'short', day:'numeric', month:'short'});
+                const f = new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
                 listaDescansos.innerHTML += `<span class="badge bg-dark border border-secondary text-white py-2 px-3">${f}</span>`;
             });
         }
@@ -311,12 +325,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Identificamos el input de usuario y el botón de guardar
     const inputLogin = document.getElementById('empLogin');
     // Buscamos el botón "GUARDAR" dentro del modal de empleados
-    const btnGuardar = document.querySelector('#modalEmpleado .modal-footer .btn-warning'); 
+    const btnGuardar = document.querySelector('#modalEmpleado .modal-footer .btn-warning');
 
     if (inputLogin && btnGuardar) {
-        
+
         // 2. Escuchamos cuando el usuario escribe
-        inputLogin.addEventListener('input', async function() {
+        inputLogin.addEventListener('input', async function () {
             const login = this.value.trim();
 
             // A. Si borró todo o es muy corto, reseteamos colores y soltamos botón
@@ -338,10 +352,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     // ¡YA EXISTE! -> Rojo, Bloquear botón y mostrar mensaje
                     this.classList.add('is-invalid'); // Borde rojo
                     this.classList.remove('is-valid');
-                    
+
                     // (Opcional) Si quieres ser muy explícito, usa un Tooltip o un pequeño texto abajo
                     // Pero con el borde rojo y botón bloqueado suele bastar.
-                    
+
                     btnGuardar.disabled = true; // Bloqueamos el click
                 } else {
                     // ¡DISPONIBLE! -> Verde y Activar botón
