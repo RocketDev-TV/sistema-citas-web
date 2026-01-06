@@ -277,15 +277,26 @@ async function guardarCita() {
     
     if(!ser || !suc || !emp || !ini) return Swal.fire('Faltan datos', '', 'warning');
     
-    // Calcular fin
+    // 1. Obtener fechas base
     const dIni = new Date(ini);
-    const dur = document.getElementById('inputServicioDuracion').value;
-    const dFin = new Date(dIni.getTime() + dur*60000);
+    const dur = parseInt(document.getElementById('inputServicioDuracion').value);
+    const dFin = new Date(dIni.getTime() + dur * 60000);
+
+    // 2. EL TRUCO: Ajustar la Zona Horaria para que toISOString() no la cambie
+    // Restamos el offset (en minutos) multiplicado por 60000 ms
+    const tzOffset = dIni.getTimezoneOffset() * 60000;
     
+    const localIni = new Date(dIni.getTime() - tzOffset);
+    const localFin = new Date(dFin.getTime() - tzOffset);
+
+    // 3. Ahora sí, mandamos la hora "Local" limpia
     const body = {
-        idCliente: cli, idServicio: ser, idSucursal: suc, idEmpleado: emp,
-        fechaInicio: dIni.toISOString().slice(0,19),
-        fechaFin: dFin.toISOString().slice(0,19)
+        idCliente: cli, 
+        idServicio: ser, 
+        idSucursal: suc, 
+        idEmpleado: emp,
+        fechaInicio: localIni.toISOString().slice(0,19),
+        fechaFin: localFin.toISOString().slice(0,19)
     };
     
     try {
