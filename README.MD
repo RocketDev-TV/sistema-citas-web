@@ -52,10 +52,47 @@ El proyecto incluye scripts automatizados para entornos locales y de producción
 Para restaurar la base de datos a un estado de fábrica (5 sucursales, 10 empleados, catálogos limpios):
 ```bash
 psql -d citas -f base-datos/scripts/local/respaldo_produccion.sql
+```
 
-▶️ Ejecución y Despliegue1. Entorno Local (IDE / Terminal)Bashmvn spring-boot:run
-Acceso: http://localhost:80802. Producción (Linux / Azure VM)Para ejecución en segundo plano (Daemon) asegurando la zona horaria correcta:Bashnohup java -Duser.timezone=America/Mexico_City -jar target/sistema-citas-0.0.1-SNAPSHOT.jar \
+---
+
+## ▶️ Ejecución y Despliegue
+
+### 1. Entorno Local (IDE / Terminal)
+```bash
+mvn spring-boot:run
+```
+
+Acceso: `http://localhost:8080`
+
+---
+
+### 2. Producción (Linux / Azure VM)
+Para ejecución en segundo plano (Daemon) asegurando la zona horaria correcta:
+
+```bash
+nohup java -Duser.timezone=America/Mexico_City -jar target/sistema-citas-0.0.1-SNAPSHOT.jar \
   --spring.datasource.url=jdbc:postgresql://localhost:5432/citas \
   --spring.datasource.username=postgres \
   --spring.datasource.password=TU_PASSWORD > log.txt 2>&1 &
-🔌 Endpoints PrincipalesMétodoEndpointDescripciónPOST/api/citasAgendar nueva cita (Valida disponibilidad y horario laboral)GET/api/citasListar citas (Filtros por rol de usuario)POST/api/sucursalesRegistrar sucursal con punto geográfico (Lat/Lon)GET/api/serviciosCatálogo de servicios y precios vigentesPOST/api/usuarios/loginAutenticación de usuarios✒️ AutoresIvan Herrera - Desarrollador Full Stack & DevOpsHecho con ❤️ y mucho café en la CDMX.
+```
+---
+
+## 🔌 Endpoints Principales
+
+| Método | Endpoint | Descripción |
+| :--- | :--- | :--- |
+| **POST** | `/api/citas` | Agendar nueva cita (Valida disponibilidad y horario laboral) |
+| **GET** | `/api/citas` | Listar citas (Filtros por rol de usuario) |
+| **POST** | `/api/sucursales` | Registrar sucursal con punto geográfico (Lat/Lon) |
+| **GET** | `/api/servicios` | Catálogo de servicios y precios vigentes |
+| **POST** | `/api/usuarios/login` | Autenticación de usuarios |
+
+---
+
+## ✒️ Autor:
+
+* **Ivan Herrera** - *Desarrollador & DevOps*
+
+---
+*Hecho con ❤️ y mucho café en la CDMX.*
