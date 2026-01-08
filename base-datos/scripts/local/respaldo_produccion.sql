@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict DfjtrC3vcVgHSmq1pf5lk27lHdDWWudVOxElLOubFb1kEWJq7OGYs40pHRpmKbQ
+\restrict fJDdTdL6I57m9bjTyheqAE1UH8mNiD0HUJIpiD6sRPqs2Dg9zNasiGaHknJbRMA
 
 -- Dumped from database version 14.20 (Ubuntu 14.20-0ubuntu0.22.04.1)
 -- Dumped by pg_dump version 14.20 (Ubuntu 14.20-0ubuntu0.22.04.1)
@@ -580,14 +580,14 @@ COPY public.cca02_rol (id_rol, tx_nombre, tx_descripcion, st_activo) FROM stdin;
 --
 
 COPY public.cci01_servicio (id_servicio, tx_nombre, tx_descripcion, st_activo, nu_duracion, nu_precio) FROM stdin;
-4	Rapado Navaja Libre	Afeitado craneal completo con navaja libre, aceites esenciales y masaje.	1	40	200.00
-2	Ritual de Barba	Toalla caliente, aceites esenciales, perfilado con navaja y bálsamo.	1	30	200.00
-6	Colorimetría / Tinte	Oculta canas o cambia de look. Incluye lavado y tratamiento hidratante.	1	90	600.00
-3	Combo Rey (Corte + Barba)	Servicio completo con toalla caliente, mascarilla negra y bebida de cortesía.	1	60	455.00
-7	Ej servicio	Servicio ej	0	25	150.00
-5	Perfilado de Ceja & Oreja	Detallado fino con navaja y cera para una apariencia impecable.	1	20	250.00
-1	Corte de Cabello	Corte básico de caballero	1	30	180.00
-8	Ej	Ej	0	40	100.00
+9	Corte Clásico	Corte tradicional con tijera y máquina	1	30	200.00
+10	Corte Moderno (Fade)	Degradado con navaja y styling	1	45	250.00
+11	Barba Express	Perfilado rápido con máquina	1	15	100.00
+12	Ritual de Barba	Toalla caliente, aceites y navaja	1	30	200.00
+13	Combo Rey (Corte + Barba)	Servicio completo premium con bebida	1	60	450.00
+14	Rapado Navaja Libre	Afeitado total de cabeza con vapor	1	40	180.00
+15	Colorimetría / Tinte	Tinte para cabello o barba (Ocultar canas)	1	90	600.00
+16	Mascarilla Negra	Limpieza facial profunda y exfoliación	1	20	150.00
 \.
 
 
@@ -604,18 +604,18 @@ COPY public.spatial_ref_sys (srid, auth_name, auth_srid, srtext, proj4text) FROM
 --
 
 COPY public.tca01_persona (id_persona, fk_id_genero, tx_nombre, tx_primer_apellido, tx_segundo_apellido, fh_nacimiento, tx_correo) FROM stdin;
-100	1	Aldo	Pruebas	\N	2000-01-01	\N
-2	1	Ivan	Rex	\N	2003-06-16	\N
-6	2	El pecas	xddd	\N	2025-12-28	pecasxd@gmail.com
-1	1	Ivan Admin	Herr	Gom	2003-06-16	\N
-4	1	Ricardo 	Aguas	Tinoco	2004-12-22	\N
-9	1	Empleado	Prub	New	2025-12-30	\N
-3	1	Ivan	Staff 	Opc	2025-12-08	\N
-10	1	Prueba	Staff	New	2026-01-05	\N
-12	1	Alex	Gonz	Gar	2026-01-05	\N
-13	1	Axel	Gonz	Gar	2026-01-05	\N
-14	1	New	Prueba	2	2026-01-05	\N
-16	1	Pruebas	user	new	2026-01-05	\N
+2	1	Pedro	Pérez	\N	1995-05-20	\N
+3	1	Juan	López	\N	1998-03-15	\N
+4	2	Maria	González	\N	1999-07-10	\N
+5	1	Carlos	Sánchez	\N	1992-11-30	\N
+6	1	Luis	Ramírez	\N	1996-02-28	\N
+7	2	Ana	Martínez	\N	2001-09-05	\N
+8	1	Jorge	Torres	\N	1994-12-12	\N
+9	2	Sofía	Díaz	\N	2000-04-18	\N
+10	1	Miguel	Hernández	\N	1997-08-22	\N
+11	2	Lucía	Ruiz	\N	1993-10-03	\N
+12	1	Cliente	Prueba	\N	2000-01-01	cliente@test.com
+1	1	Ivan	Herrera	Gomez	2003-06-16	admin@barberking.com
 \.
 
 
@@ -624,16 +624,18 @@ COPY public.tca01_persona (id_persona, fk_id_genero, tx_nombre, tx_primer_apelli
 --
 
 COPY public.tca02_usuario (id_usuario, fk_id_rol, tx_login, tx_password, st_activo, tx_token_verificacion, nu_intentos, fh_desbloqueo) FROM stdin;
-3	2	ivan_staff	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
-1	2	recepcion_1	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
-100	1	ivanadm	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
-16	2	prueba_staff	PJkJr+wlNU1VHa4hWQuybjjVPyFzuNPcPu5MBH56scHri4UQPjvnumE7MbtcnDYhTcnxSkL9ei/bhIVrylxEwg==	t	\N	0	\N
-9	2	Pruebas	Yk36S9IaHFchnKZDrGiaL69MB73YRmgbSMUnZMPMZyn09ddh+Q0ggQ/TRBs6C/CAJp8ATHNLzbWo6UUVislNRw==	t	\N	0	\N
-4	3	richi	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
-2	3	Ivan	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
-6	3	pecas	yB6ktCpuKTPs1jKJN9BYAUjKcLHTq1GWabCOfFSZOhSh7C8sXdhg1Kk2+FAj3aEnXtcOpUGaCZJZrxkEafgDDQ==	t	\N	0	\N
-14	2	axelito	PJkJr+wlNU1VHa4hWQuybjjVPyFzuNPcPu5MBH56scHri4UQPjvnumE7MbtcnDYhTcnxSkL9ei/bhIVrylxEwg==	t	\N	0	\N
-13	2	axel	PJkJr+wlNU1VHa4hWQuybjjVPyFzuNPcPu5MBH56scHri4UQPjvnumE7MbtcnDYhTcnxSkL9ei/bhIVrylxEwg==	t	\N	0	\N
+1	1	ivanadm	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+2	2	pedro	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+3	2	juan	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+4	2	maria	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+5	2	carlos	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+6	2	luis	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+7	2	ana	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+8	2	jorge	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+9	2	sofía	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+10	2	miguel	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+11	2	lucía	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
+12	3	cliente	1ARVn2Auq2/WAqx2gNrL+q3RNjAzXpUfCXrzkA6d4Xa22yhRLy4AC50E+6UTPoscbo31nbOoq51gvkuXzJ6B2w==	t	\N	0	\N
 \.
 
 
@@ -651,12 +653,11 @@ COPY public.tce01_establecimiento (id_establecimiento, tx_nombre) FROM stdin;
 --
 
 COPY public.tce02_sucursal (id_sucursal, fk_id_establecimiento, tx_nombre, gm_ubicacion, st_activo) FROM stdin;
-1	1	Sucursal UPIICSA	0101000000C442AD69DEC558C0DAACFA5C6D653340	t
-6	1	Sucursal Norte	\N	t
-7	1	Sucursal Oriente	\N	t
-8	1	Sucursal Sur	\N	t
-9	1	Sucursal Prueba	\N	f
-12	1	Sucursal UPIICSA 2	\N	f
+1	1	Barber King Centro Histórico	\N	t
+2	1	Barber King Plaza Norte	\N	t
+3	1	Barber King Zona Rosa	\N	t
+4	1	Barber King Aeropuerto	\N	t
+5	1	Barber King Corporativo	\N	t
 \.
 
 
@@ -666,14 +667,16 @@ COPY public.tce02_sucursal (id_sucursal, fk_id_establecimiento, tx_nombre, gm_ub
 
 COPY public.tce03_empleado (id_empleado, fk_id_sucursal, st_activo) FROM stdin;
 1	1	1
-3	1	1
-10	8	1
-100	12	1
-12	7	0
-13	7	0
-14	12	0
-9	6	0
-16	6	1
+2	3	1
+3	4	1
+4	5	1
+5	1	1
+6	2	1
+7	3	1
+8	4	1
+9	5	1
+10	1	1
+11	2	1
 \.
 
 
@@ -697,10 +700,6 @@ COPY public.tce04_dia_laboral (id_dia, tx_nombre, tx_descripcion, st_activo) FRO
 --
 
 COPY public.tce05_dia_descanso (id_dia_descanso, fk_id_empleado, fh_descanso) FROM stdin;
-2	3	2026-01-06
-3	3	2026-01-07
-4	9	2026-01-17
-6	16	2026-01-09
 \.
 
 
@@ -709,23 +708,6 @@ COPY public.tce05_dia_descanso (id_dia_descanso, fk_id_empleado, fh_descanso) FR
 --
 
 COPY public.tce06_empleado_horario (fk_id_horario, fk_id_persona) FROM stdin;
-101	9
-103	9
-105	9
-107	9
-43	3
-45	3
-47	3
-49	3
-52	3
-101	16
-103	16
-105	16
-107	16
-133	10
-135	10
-139	10
-141	10
 \.
 
 
@@ -734,12 +716,6 @@ COPY public.tce06_empleado_horario (fk_id_horario, fk_id_persona) FROM stdin;
 --
 
 COPY public.tce07_bloque_cita (fk_id_sucursal, fk_id_cita, fh_inicio, fh_fin) FROM stdin;
-1	4	2025-12-09 21:04:00	2025-12-09 22:04:00
-1	17	2025-12-24 21:05:00	2025-12-24 22:05:00
-1	19	2025-12-27 18:17:00	2025-12-27 18:37:00
-1	20	2026-01-02 18:19:00	2026-01-02 18:49:00
-7	21	2026-01-06 20:03:00	2026-01-06 20:33:00
-6	22	2026-01-05 18:31:00	2026-01-05 19:31:00
 \.
 
 
@@ -748,72 +724,6 @@ COPY public.tce07_bloque_cita (fk_id_sucursal, fk_id_cita, fh_inicio, fh_fin) FR
 --
 
 COPY public.tce08_horario (id_horario, fk_id_sucursal, fk_id_dia, tm_inicio, tm_fin) FROM stdin;
-143	12	1	09:00:00	14:00:00
-144	12	1	16:00:00	20:00:00
-145	12	2	09:00:00	14:00:00
-146	12	2	16:00:00	20:00:00
-147	12	3	09:00:00	14:00:00
-148	12	3	16:00:00	20:00:00
-149	12	4	09:00:00	14:00:00
-150	12	4	16:00:00	20:00:00
-151	12	5	09:00:00	14:00:00
-152	12	5	16:00:00	20:00:00
-43	1	1	09:00:00	14:00:00
-44	1	1	16:00:00	20:00:00
-45	1	2	09:00:00	14:00:00
-46	1	2	16:00:00	20:00:00
-47	1	3	09:00:00	14:00:00
-48	1	3	16:00:00	20:00:00
-49	1	4	09:00:00	14:00:00
-50	1	4	16:00:00	20:00:00
-51	1	5	09:00:00	14:00:00
-52	1	5	16:00:00	20:00:00
-53	1	6	09:00:00	14:00:00
-54	1	6	16:00:00	20:00:00
-55	7	1	09:00:00	14:00:00
-56	7	1	16:00:00	20:00:00
-57	7	2	09:00:00	14:00:00
-58	7	2	16:00:00	20:00:00
-59	7	3	09:00:00	14:00:00
-60	7	3	16:00:00	20:00:00
-61	7	4	09:00:00	14:00:00
-62	7	4	16:00:00	20:00:00
-63	7	5	09:00:00	14:00:00
-64	7	5	16:00:00	20:00:00
-65	7	6	09:00:00	14:00:00
-66	7	6	16:00:00	20:00:00
-101	6	1	09:00:00	14:00:00
-102	6	1	16:00:00	20:00:00
-103	6	2	09:00:00	14:00:00
-104	6	2	16:00:00	20:00:00
-105	6	3	09:00:00	14:00:00
-106	6	3	16:00:00	20:00:00
-107	6	4	09:00:00	14:00:00
-108	6	4	16:00:00	20:00:00
-109	6	5	09:00:00	14:00:00
-110	6	5	16:00:00	20:00:00
-111	9	1	09:00:00	14:00:00
-112	9	1	16:00:00	20:00:00
-113	9	2	09:00:00	14:00:00
-114	9	2	16:00:00	20:00:00
-115	9	3	09:00:00	14:00:00
-116	9	3	16:00:00	20:00:00
-117	9	4	09:00:00	14:00:00
-118	9	4	16:00:00	20:00:00
-119	9	5	09:00:00	14:00:00
-120	9	5	16:00:00	20:00:00
-121	9	7	09:00:00	14:00:00
-122	9	7	16:00:00	20:00:00
-133	8	1	09:00:00	14:00:00
-134	8	1	16:00:00	20:00:00
-135	8	2	09:00:00	14:00:00
-136	8	2	16:00:00	20:00:00
-137	8	3	09:00:00	14:00:00
-138	8	3	16:00:00	20:00:00
-139	8	4	09:00:00	14:00:00
-140	8	4	16:00:00	20:00:00
-141	8	5	09:00:00	14:00:00
-142	8	5	16:00:00	20:00:00
 \.
 
 
@@ -831,13 +741,14 @@ COPY public.tci01_estado_lista_precio (id_estado, tx_nombre) FROM stdin;
 --
 
 COPY public.tci02_servicio_lista_precio (fk_id_servicio, fk_id_lista_precio, nu_precio) FROM stdin;
-1	1	200
-3	1	450
-4	1	250
-5	1	100
-6	1	600
-2	1	180
-7	1	200
+9	1	200
+10	1	250
+11	1	100
+12	1	200
+13	1	450
+14	1	180
+15	1	600
+16	1	150
 \.
 
 
@@ -855,12 +766,6 @@ COPY public.tci03_lista_precio (id_lista_precio, fk_id_estado, tx_nombre, fh_ini
 --
 
 COPY public.tci05_cita (id_cita, fk_id_persona, fk_id_servicio, fk_id_lista_precio, fk_id_sucursal, fk_id_empleado) FROM stdin;
-4	1	3	1	1	1
-17	4	3	1	1	3
-19	4	5	1	1	1
-20	2	1	1	1	3
-21	4	2	1	7	1
-22	2	3	1	6	9
 \.
 
 
@@ -868,14 +773,14 @@ COPY public.tci05_cita (id_cita, fk_id_persona, fk_id_servicio, fk_id_lista_prec
 -- Name: cci01_servicio_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cci01_servicio_id_seq', 8, true);
+SELECT pg_catalog.setval('public.cci01_servicio_id_seq', 16, true);
 
 
 --
 -- Name: tca01_persona_id_persona_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.tca01_persona_id_persona_seq', 21, true);
+SELECT pg_catalog.setval('public.tca01_persona_id_persona_seq', 12, true);
 
 
 --
@@ -889,7 +794,7 @@ SELECT pg_catalog.setval('public.tce01_establecimiento_id_establecimiento_seq', 
 -- Name: tce02_sucursal_id_sucursal_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.tce02_sucursal_id_sucursal_seq', 12, true);
+SELECT pg_catalog.setval('public.tce02_sucursal_id_sucursal_seq', 5, true);
 
 
 --
@@ -903,14 +808,14 @@ SELECT pg_catalog.setval('public.tce04_dia_laboral_id_dia_seq', 1, false);
 -- Name: tce05_dia_descanso_id_dia_descanso_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.tce05_dia_descanso_id_dia_descanso_seq', 6, true);
+SELECT pg_catalog.setval('public.tce05_dia_descanso_id_dia_descanso_seq', 1, false);
 
 
 --
 -- Name: tce08_horario_id_horario_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.tce08_horario_id_horario_seq', 152, true);
+SELECT pg_catalog.setval('public.tce08_horario_id_horario_seq', 1, false);
 
 
 --
@@ -931,7 +836,7 @@ SELECT pg_catalog.setval('public.tci03_lista_precio_id_lista_precio_seq', 1, fal
 -- Name: tci05_cita_id_cita_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.tci05_cita_id_cita_seq', 23, true);
+SELECT pg_catalog.setval('public.tci05_cita_id_cita_seq', 1, false);
 
 
 --
@@ -1234,5 +1139,5 @@ ALTER TABLE ONLY public.tci05_cita
 -- PostgreSQL database dump complete
 --
 
-\unrestrict DfjtrC3vcVgHSmq1pf5lk27lHdDWWudVOxElLOubFb1kEWJq7OGYs40pHRpmKbQ
+\unrestrict fJDdTdL6I57m9bjTyheqAE1UH8mNiD0HUJIpiD6sRPqs2Dg9zNasiGaHknJbRMA
 
