@@ -22,5 +22,4 @@ public class Sucursal {
     @Column(name = "fk_id_establecimiento")
     private Integer idEstablecimiento;
     
-    // ¡AQUÍ YA NO DEBE HABER NADA DE UBICACIÓN!
 }

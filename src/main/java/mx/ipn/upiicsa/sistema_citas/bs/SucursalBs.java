@@ -114,7 +114,7 @@ public class SucursalBs {
 
     private void eliminarSoloDependencias(Integer idSucursal) {
         // A. Empleados
-        empleadoRepository.desvincularSucursal(idSucursal);
+        //empleadoRepository.desvincularSucursal(idSucursal);
 
         // B. Citas
         citaRepository.deleteBySucursalId(idSucursal);
