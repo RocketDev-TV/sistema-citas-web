@@ -9,7 +9,7 @@ Plataforma integral para la gestión y agendamiento de citas, desarrollada bajo 
 
 **Institución:** UPIICSA - Instituto Politécnico Nacional (IPN)  
 **Proyecto:** Sistema de Citas (3er Parcial)  
-**Materia:** Programación Web / Ingeniería de Software
+**Materia:** Programación Web / Ingeniería en Informatica
 
 ---
 
